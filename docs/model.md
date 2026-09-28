@@ -1,36 +1,51 @@
 # Model and algorithm
 
-For one SKU, channel i receives integer allocation x_i. Central inventory is S; channel capacity is c_i; the minimum allocation is l_i = ceil(alpha * forecast_i). Constraints are l_i <= x_i <= c_i and sum(x_i) <= S. Minimum allocations refer to forecast quantities, not a probabilistic service guarantee.
+## Sample-average formulation
 
-For demand scenario d and allocation x:
+Consider $C$ channels and $N$ planning scenarios $d^{(1)},\ldots,d^{(N)}$. For a feasible integer allocation $x$, define
 
-- sold = min(d, x)
-- shortage = max(d - x, 0)
-- leftover = max(x - d, 0)
-- contribution = margin * sold - shipping * x - holding * leftover
-- economic value = contribution - penalty * shortage
+$$
+f_i(x_i)=\frac1N\sum_{n=1}^{N}\left[m_i\min(d_i^{(n)},x_i)-s_ix_i-h_i(x_i-d_i^{(n)})^+-p_i(d_i^{(n)}-x_i)^+\right].
+$$
 
-Maximize total expected economic value, averaged over planning scenarios. Shipping is charged on every dispatched unit. Inventory retained at the central warehouse incurs zero modeled cost. Fixed procurement costs are excluded.
+The problem is to maximize $\sum_i f_i(x_i)$ subject to
 
-## Exact marginal allocation
+$$
+\ell_i\le x_i\le c_i,\qquad \sum_i x_i\le S,\qquad x_i\in\mathbb Z,\qquad
+\ell_i=\lceil\alpha\widehat d_i\rceil.
+$$
 
-Let q_i(k) be the empirical probability that demand at channel i is at least k. Adding its kth unit changes expected value by:
+All cost and margin parameters are nonnegative. Feasibility requires $\ell_i\le c_i$ for every channel and $\sum_i\ell_i\le S$. The implementation rejects infeasible instances.
 
-```
-gain_i(k) = (margin_i + penalty_i + holding_i) * q_i(k)
-            - holding_i - shipping_i
-```
+Shipping costs apply to every dispatched unit. Margin is revenue net of variable product cost on sold units; fixed procurement expenditure is excluded. Unsold channel units incur a period holding charge with no separate salvage proceeds. Undispatched central stock has zero modeled cost and no future value. Shortage penalties are preference parameters rather than accounting expenditures.
 
-When the unit sells, it earns margin, avoids one shortage penalty, and incurs shipping. Otherwise it incurs holding and shipping. Because q_i(k) is nonincreasing and the coefficients are nonnegative, gains are nonincreasing in k. Thus every channel's value function is discretely concave.
+## Marginal value
 
-Start from the required lower bounds. Every feasible extension selects a prefix of each channel's remaining marginal sequence. Repeatedly selecting the largest currently available gain selects the largest feasible marginal values globally: a later value in a channel cannot exceed an earlier one, so its predecessor cannot block a strictly better unselected choice. Exchange any differing unit of another feasible solution for a larger greedy-selected unit, preserving a prefix selection through ties; objective cannot decrease. This gives an optimal solution under the single shared unit-budget constraint. Stop at nonpositive gains because inventory need not all be dispatched. Ties may produce multiple optimal allocations.
+Let $\widehat q_i(k)=N^{-1}\sum_n\mathbf1\{d_i^{(n)}\ge k\}$. Adding the $k$th unit either satisfies one unit of demand or remains unsold. Consequently,
 
-The heap handles C channels and U allocated incremental units. The present transparent implementation computes each empirical tail probability directly over N scenarios, costing O(U*(N + log C)); memory is O(N*C + C). Sorting demand and precomputing tail probabilities would improve scale. The included cases are intentionally small.
+$$
+\Delta_i(k):=f_i(k)-f_i(k-1)
+=(m_i+p_i)\widehat q_i(k)-h_i[1-\widehat q_i(k)]-s_i.
+$$
 
-This proof does not extend to fixed transport costs, coupled service constraints, multiple warehouses, or arbitrary shared resource coefficients.
+Since $\widehat q_i(k)$ is nonincreasing, $\Delta_i(k)$ is nonincreasing. Each $f_i$ is therefore discretely concave. Correlation between channel demands does not affect this argument: the objective is additive and the inventory decision is made before demand is observed.
 
-## Evaluation
+## Proposition
 
-Plan using 400 demand scenarios; freeze allocations; evaluate using 2,000 independent scenarios. The demand multiplier in sensitivity tests modifies test demand only, so policy construction cannot use future demand shifts. Fill rate is total sold divided by total demand over all test scenarios, not the unweighted mean of per-scenario ratios.
+Starting from $x=\ell$, repeatedly assign a unit to a channel with the largest positive available $\Delta_i(x_i+1)$, provided $x_i<c_i$. Stop when the inventory budget is exhausted or no positive increment remains. The resulting allocation maximizes the sample-average objective.
 
-Compute paired differences of scenario economic values between optimized and proportional policies. Report mean(delta) ± 1.96 * sample_std(delta) / sqrt(2000), an approximate normal interval for Monte Carlo uncertainty conditional on the chosen policy and generator. The fifth percentile is a descriptive downside statistic, not an optimized risk constraint.
+**Proof.** Any feasible allocation extends $\ell$ by choosing a prefix from each sequence
+
+$$
+\Delta_i(\ell_i+1),\ldots,\Delta_i(c_i),
+$$
+
+with at most $R=S-\sum_i\ell_i$ increments overall. Each sequence is nonincreasing. The largest unselected increment in their union is always among the first unselected elements: later elements cannot exceed their predecessors. The algorithm therefore selects the globally largest positive increments in nonincreasing order, with predecessor-first tie breaking. Its selection is prefix-feasible and reaches the upper bound obtained by ignoring the prefix restriction and choosing at most $R$ increments from the union. Hence it is optimal. Zero-valued increments may be omitted without affecting the objective. $\square$
+
+The result applies to a single shared unit-budget constraint and separable concave values. Fixed shipment charges, coupled service constraints, and nonuniform resource requirements generally invalidate this argument. The algorithm is an application of the marginal-allocation principle; no claim of algorithmic novelty is made.
+
+## Implementation
+
+A heap stores one available increment per channel. Tail probabilities are computed directly from the scenario array. For $U$ incremental allocations, runtime is $O((C+U)N+U\log C)$ including initialization, and memory is $O(NC+C)$. Precomputed empirical tails would reduce repeated scenario scans.
+
+`tests/test_allocation.py` compares the optimizer against exhaustive enumeration on small instances and checks feasibility for each policy. These tests validate implementation behavior; optimality for the stated model follows from the proposition.
