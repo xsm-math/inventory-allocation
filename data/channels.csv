@@ -1,0 +1,11 @@
+sku,channel,forecast,capacity,margin,shipping,holding,shortage_penalty
+Camera-A,Official store,160,220,520,12,24,100
+Camera-A,Marketplace,260,320,360,18,24,60
+Camera-A,Retail dealers,220,280,290,10,20,80
+Camera-A,Flagship shops,110,150,480,25,30,120
+Camera-A,Overseas,170,220,620,90,45,100
+Gimbal-B,Official store,200,270,170,8,10,35
+Gimbal-B,Marketplace,350,440,120,10,10,25
+Gimbal-B,Retail dealers,280,350,95,7,8,30
+Gimbal-B,Flagship shops,130,180,160,12,12,40
+Gimbal-B,Overseas,180,240,220,40,18,40

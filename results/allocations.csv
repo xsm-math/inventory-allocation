@@ -1,0 +1,7 @@
+sku,strategy,Official store,Marketplace,Retail dealers,Flagship shops,Overseas
+Camera-A,proportional,108,175,148,74,115
+Camera-A,margin_first,220,65,55,60,220
+Camera-A,optimized,133,153,112,87,135
+Gimbal-B,proportional,137,240,191,89,123
+Gimbal-B,margin_first,270,88,70,112,240
+Gimbal-B,optimized,161,222,148,104,145
