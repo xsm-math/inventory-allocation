@@ -1,3 +1,5 @@
 .venv/
 __pycache__/
 *.pyc
+results/network/*.png
+results/network/episode.json

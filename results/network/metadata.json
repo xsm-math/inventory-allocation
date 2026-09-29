@@ -1,0 +1,28 @@
+{
+  "generated_at": "2026-09-29T01:06:18.416318+00:00",
+  "python": "3.12.14",
+  "numpy": "2.3.5",
+  "pandas": "2.2.3",
+  "scipy": "1.17.0",
+  "config_sha256": "b20f8bdf22e9c54c581f0f5a68c32fefb867ebdfff5bc752d6c9412ea5c2775a",
+  "seeds": [
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112
+  ],
+  "days": 21,
+  "horizon": 5,
+  "buffer_standard_deviations": 0.4,
+  "time_limit_seconds": 2.0,
+  "requested_mip_gap": 0.02,
+  "synthetic_data": true
+}
