@@ -1,0 +1,66 @@
+{
+  "python": "3.14.7",
+  "numpy": "2.5.3",
+  "pandas": "2.3.3",
+  "scipy": "1.18.1",
+  "sensitivity_seeds": [
+    201,
+    202,
+    203,
+    204,
+    205,
+    206
+  ],
+  "forecast_seeds": [
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112
+  ],
+  "days": 21,
+  "time_limit": 2.0,
+  "unique_sensitivity_episodes": 108,
+  "levels": {
+    "service_target": [
+      0.6,
+      0.8,
+      0.95
+    ],
+    "shortage_cost": [
+      0.5,
+      1.0,
+      2.0
+    ],
+    "holding_cost": [
+      0.5,
+      1.0,
+      2.0
+    ],
+    "capacity": [
+      0.7,
+      1.0,
+      1.3
+    ]
+  },
+  "source_sha256": {
+    "supplychain/__init__.py": "a44189822d7939c1134a4ba252fb5866b2938a0b09baf306b093e6d857ddf8a6",
+    "supplychain/__main__.py": "7a676762c27e5c767c5bab0693335d6d5420a544ef01dc3d2f1bcd0645cb98cd",
+    "supplychain/benchmark.py": "a3d41c6122367419ec5ab670178880b142d302b4c4b7eb775f78168963e5844a",
+    "supplychain/forecast.py": "4f4163a4d184c7be793e5e580eee31d80939787097e3ac65eaede5a9d7c13320",
+    "supplychain/network.py": "19c197b5145e6f33f95c17b05369092c276c5e3854ef3acaf29e403cd845cf6d",
+    "supplychain/planner.py": "d59c84c7f86497512b5193d03e5d4c34056f5fe65af4d39219e08ee8d5536fb6",
+    "supplychain/policies.py": "57ac38e682d4e713d4bdcae76263ae5eb23d4c26da3930f0b62a248ff41a67b3",
+    "supplychain/research.py": "dbb451193a41ee8ebfc6ae0d8c31a67cc0786ec2f01d1962b7f08ede4b80bae1",
+    "supplychain/scaling.py": "fa2b60536bd53ec417c459105055e82785ead63434039c8b1ccfcb85683f5856",
+    "supplychain/simulation.py": "6f55c2852a542dbc31c100e4d3cde76a58d6b086e7dc4e1553499de616743a0f"
+  },
+  "config_sha256": "cd678255014898bc4a7a90e6788f3915800a5424e20cda5f50bd37d5c8ba0ca1"
+}

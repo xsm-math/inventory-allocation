@@ -1,112 +1,134 @@
 # Inventory Networks under Demand and Supply Uncertainty
 
-**Joint replenishment and channel allocation with rolling mixed-integer optimization.**
+**A computational study of rolling mixed-integer allocation, forecast uncertainty, and service–cost trade-offs.**
 
 ## Abstract
 
-This repository studies inventory decisions in a distribution network with delayed replenishment, heterogeneous channel demand, shared transport capacity, and fixed dispatch costs. A rolling-horizon mixed-integer linear program jointly determines supplier orders and warehouse-to-channel shipments. It is evaluated against a base-stock policy using independent synthetic demand trajectories and a separate physical simulator. The reference study comprises 108 episodes across normal demand, a demand surge, and a supplier-capacity/budget disruption. Adding a historical-variability buffer to the optimization forecasts improves mean economic value relative to the baseline in all three regimes, while aggregate and worst-channel service remain lower. Unbuffered optimization performs worse than the baseline under normal demand. These results distinguish the effect of forecast treatment from the mere use of a more elaborate optimizer.
+This project studies joint replenishment and allocation in a multi-warehouse, multi-store-channel, multi-SKU inventory network. A rolling mixed-integer linear program coordinates procurement, delayed ground shipments, and same-day express shipments under shared capacities and fixed dispatch charges. Four policies are evaluated using paired Monte Carlo trajectories: a base-stock heuristic, point-forecast MILP, buffered-forecast MILP, and explicit safety-stock MILP. The study separates planning objectives from realized accounting, compares service and economic value, and examines sensitivity to service targets, shortage costs, holding costs, and transport capacity. All data are synthetic; the contribution is a reproducible computational experiment and validated implementation, not a new optimization algorithm or evidence of operational savings.
 
-![Policy comparison](results/network/policy_comparison.svg)
+## Problem
 
-## 1. Formulation
+Three warehouses supply five retail channels/store groups with two SKUs over 21 daily decisions. Ground shipments take one or two days; express takes zero days; procurement takes two days. Orders are placed before the day's demand is revealed. Unserved demand is lost. The decision problem is to allocate limited inventory and transport capacity while balancing heterogeneous sales margins, shortage penalties, freight, fixed dispatch charges, and holding costs.
 
-The reference network contains three warehouses, five channels, two products, and two transport modes. Ground transport takes one or two days; express transport arrives on the dispatch day. Supplier replenishment takes two days. Integer replenishment and shipment decisions share daily procurement, supplier, warehouse-throughput, and lane-capacity constraints. Binary lane activations incur fixed dispatch charges.
+All policies receive identical uncensored historical demand, starting inventory, costs, and today's supply restrictions. Future demand and disruption recovery dates are withheld. See [data provenance](data/README.md) and the [event sequence and model](docs/network_model.md).
 
-The planner minimizes acquisition, freight, dispatch, holding, and shortage costs less sales revenue and terminal inventory credit. A soft forecast-service target is included as a planning regularizer. It is a deterministic rolling MILP with an uncertainty-buffer variant, not a multistage stochastic program. The [mathematical formulation](docs/network_model.md) specifies balances, lead-time indexing, terminal treatment, information timing, and solver acceptance criteria.
+## Formulation
+
+Integer orders $q_{twp}$ and shipments $x_{twcmp}$ are coupled with binary lane activations $z_{twcm}$. Inventory, sales, lost demand, and regularization slack are continuous nonnegative auxiliary variables. The objective is
+
+$$\min\; C_{procurement}+C_{freight}+C_{dispatch}+C_{holding}+C_{lost}+C_{service}+C_{reserve}-R_{sales}-V_{terminal}.$$
+
+Constraints enforce warehouse and channel inventory balance with pipeline arrivals, supplier limits, procurement budgets, shared warehouse throughput, and lane volume capacity $\sum_p v_p x_{twcmp}\le K_m z_{twcm}$. A soft horizon-service target satisfies $\sum_t y_{tcp}+e_{cp}\ge\rho\sum_t\widehat d_{tcp}$. Fixed dispatch costs and indivisible shipment units motivate MILP. The [full formulation](docs/network_model.md) defines every term and boundary convention.
+
+The safety-stock variant adds $I^C_{tcp}+b_{tcp}\ge a_t SS_{cp}$, with $SS_{cp}=\lceil z_{0.9}\widehat\sigma_{cp}\sqrt{L^q}\rceil$ estimated from past-only forecast residuals. The taper releases reserve near the planning boundary. Slack is penalized to retain feasibility under shortages. This normal approximation is a policy heuristic, not a chance constraint or guaranteed 90% fill rate.
+
+## Methodology
 
 | Component | Implementation |
 |---|---|
-| Demand model | Weekly Poisson-lognormal demand with shared and local variability; 42-day forecast history. |
-| Forecast | Recent-level and same-weekday estimates; optional 0.4-standard-deviation buffer. |
-| Controller | Five-day planning window, first-day execution, daily reoptimization. |
-| Transport | Ground and express lanes, product-volume capacity, shared fixed dispatch costs. |
-| Replenishment | Integer supplier orders, acquisition costs, two-day lead time, common budget. |
-| Simulator | Order-before-demand events, explicit pipelines, lost sales, product-level conservation. |
-| Solver | Sparse SciPy/HiGHS MILP; time/gap diagnostics and validated-incumbent fallback. |
+| Demand | Weekly Poisson-lognormal process with common and local variability; 42 historical days. |
+| Forecast | Seven-day level plus same-weekday history; rolling evaluation against recent mean and seasonal naive. |
+| Baseline | Feasible base-stock allocation, immediate express coverage, cost-ordered ground replenishment, geographical procurement shares. |
+| Rolling MILP | Five-day lookahead; execute only today's actions, observe demand, update state, reoptimize. |
+| Buffered MILP | Add 0.4 historical standard deviations to point forecasts. |
+| Safety-stock MILP | Keep point forecasts; separately penalize inventory below a residual-based reserve target. |
+| Uncertainty evaluation | Independent Monte Carlo demand paths, common random numbers across policies, paired seed-level intervals. |
+| Validation | Independent tiny-instance enumeration, physical conservation, cost reconciliation, no-future-access checks, feasible-incumbent fallback. |
 
-## 2. Computational study
+The controller is deterministic forecast-based optimization. Monte Carlo is used for evaluation, not multistage stochastic programming. Planning service/reserve penalties are regularizers excluded from the realized economic ledger. Realized shortage penalties are included.
 
-Each policy is evaluated on the same 12 seeds per regime, with 21 days per episode. Policies use observed history only; demand shocks and supply-recovery dates are withheld. All parameters and data are synthetic. Monetary values are illustrative CNY, and results are finite-horizon rather than steady-state estimates.
+## Experiments
 
+The main study uses 12 seeds × three regimes × four policies = 144 episodes. Regimes are normal demand, a 45% demand surge, and a supplier-capacity/budget disruption. A matched horizon ablation retains the original 3/5/7-day study. The sensitivity study uses six separate seeds and three levels for each of four factors, comparing base stock and safety-stock MILP. Reference cells are reused; there are 108 unique sensitivity episodes. No parameter search or post-hoc best-policy selection is performed.
+
+The solver receives two seconds per decision and a 2% relative MIP-gap tolerance. These settings apply to the planning model, not realized policy optimality. See the [experimental protocol](docs/network_experiments.md) for accounting, pairing, constraints, and statistical limitations.
+
+## Results
+
+<!-- RESULTS:START -->
 | Regime | Policy | Economic value (CNY) | Fill rate | Worst-channel fill |
 |---|---|---:|---:|---:|
-| Normal | Base stock | 82,168 | 97.03% | 94.68% |
-| Normal | Rolling MILP | 78,696 | 89.24% | 86.00% |
-| Normal | Buffered MILP | 84,753 | 94.41% | 91.79% |
-| Surge | Base stock | 81,722 | 83.57% | 78.85% |
-| Surge | Rolling MILP | 83,227 | 76.62% | 66.69% |
-| Surge | Buffered MILP | 90,111 | 79.77% | 65.49% |
-| Supply Shock | Base stock | 67,956 | 88.09% | 83.38% |
-| Supply Shock | Rolling MILP | 68,425 | 78.24% | 63.38% |
-| Supply Shock | Buffered MILP | 73,453 | 81.91% | 64.54% |
+| normal | Base stock | 82,168 | 97.03% | 94.68% |
+| normal | Rolling MILP | 78,749 | 89.28% | 86.10% |
+| normal | Buffered MILP | 84,679 | 94.37% | 91.56% |
+| normal | Safety-stock MILP | 83,593 | 94.72% | 90.97% |
+| surge | Base stock | 81,722 | 83.57% | 78.85% |
+| surge | Rolling MILP | 83,314 | 76.64% | 66.48% |
+| surge | Buffered MILP | 90,146 | 79.78% | 65.11% |
+| surge | Safety-stock MILP | 86,971 | 80.07% | 65.37% |
+| supply_shock | Base stock | 67,956 | 88.09% | 83.38% |
+| supply_shock | Rolling MILP | 68,597 | 78.28% | 63.08% |
+| supply_shock | Buffered MILP | 73,615 | 82.04% | 64.47% |
+| supply_shock | Safety-stock MILP | 70,714 | 82.26% | 69.82% |
 
-**Buffered MILP versus base stock:**
+| Regime | Policy vs. base stock | Paired gain (CNY) | 95% interval half-width | Relative gain |
+|---|---|---:|---:|---:|
+| normal | Rolling MILP | -3,418 | 912 | -4.16% |
+| normal | Buffered MILP | 2,512 | 966 | 3.06% |
+| normal | Safety-stock MILP | 1,425 | 860 | 1.73% |
+| surge | Rolling MILP | 1,592 | 1,697 | 1.95% |
+| surge | Buffered MILP | 8,424 | 1,922 | 10.31% |
+| surge | Safety-stock MILP | 5,249 | 1,580 | 6.42% |
+| supply_shock | Rolling MILP | 641 | 979 | 0.94% |
+| supply_shock | Buffered MILP | 5,660 | 986 | 8.33% |
+| supply_shock | Safety-stock MILP | 2,759 | 976 | 4.06% |
 
-| Regime | Paired gain (CNY) | 95% interval half-width | Relative gain |
-|---|---:|---:|---:|
-| Normal | 2,586 | ±934 | 3.15% |
-| Surge | 8,390 | ±1,926 | 10.27% |
-| Supply Shock | 5,497 | ±896 | 8.09% |
+Main study: 144 episodes; 0 fallback days; 1 time-limit days; maximum recorded MIP gap 2.00%.
 
-Intervals use paired seed-level differences and a Student-t approximation. They quantify sampling variation within this synthetic model, not uncertainty about real-world performance. The [experimental protocol](docs/network_experiments.md) records complete policy definitions and statistical conventions.
+Paired, unadjusted Student-t intervals describe seed variation within the synthetic model. They do not establish real-world savings or guarantee service.
+<!-- RESULTS:END -->
 
-The buffered controller reduces variable freight sufficiently to offset lower sales service and achieves higher economic value in these instances. This is not a Pareto improvement: channels with weaker economic incentives can receive substantially worse service, especially under disruption. The soft service target does not prevent this. The unbuffered controller loses 4.23% of baseline economic value under normal demand; solving a larger deterministic model does not remove forecast error.
+![Economic value and service](results/network/policy_comparison.svg)
+![One-factor sensitivity](results/research/sensitivity.svg)
 
-The main benchmark recorded no fallback or time-limit days. The largest reported MIP gap was 1.99%, within the requested 2% tolerance. This is a solver bound on each planning model, not an optimality guarantee for the realized rolling policy.
+Complete [research tables](docs/research_results.md), [interpretation](docs/findings.md), [episode metrics](results/network/episodes.csv), [paired comparisons](results/network/paired_comparisons.csv), [forecast evaluation](results/research/forecast_scores.csv), and [sensitivity episodes](results/research/sensitivity_episodes.csv) preserve the evidence. The sensitivity chart shows marginal seed-level intervals; paired differences are in a separate CSV.
 
-## 3. Horizon and scale
+## Limitations
 
-A matched four-seed ablation compares 3-, 5-, and 7-day planning windows. Under normal demand, mean economic value is 66,813, 77,537, and 77,693 CNY, respectively. Under the supply shock it is 59,597, 67,223, and 67,724 CNY. The modest change from five to seven days contrasts with the larger short-horizon loss, though the experiment is too small to establish a universal horizon choice.
+- Synthetic, uncensored demand and illustrative CNY parameters require calibration before business use. Channels represent store groups, not validated individual outlets.
+- Soft service and safety-stock targets can be violated; increased economic value need not improve aggregate or worst-channel service.
+- The normal safety-stock approximation neglects serial correlation and does not model a full procurement-plus-distribution protection period. Express availability motivates the two-day reserve scale but does not establish an optimal reserve.
+- Finite-horizon salvage, reserve taper, boundary-arrival restrictions, and unequal baseline/MILP lookahead affect results. No steady-state burn-in is claimed.
+- There is no inter-warehouse transfer, stochastic transport delay, physical storage-volume limit, minimum dispatch lot, vehicle routing, or demand censoring model. Transport capacity and fixed dispatch costs are implemented.
+- Small synthetic scaling tests and unadjusted intervals do not establish industrial scalability or general superiority. No new optimization algorithm is claimed.
 
-The largest dimension check uses eight warehouses, twenty channels, two products, and seven planning days: **7,824 variables, 6,832 integer/binary variables, and 3,029 constraints**. Three identical-instance timing repeats took approximately 0.44–0.46 seconds, including model assembly, with a 1.07% gap. These figures are specific to this execution environment and synthetic construction. Raw timings and solver outcomes are in [scaling.csv](results/network/scaling.csv).
+## Future Work
 
-![Representative trajectories](results/network/trajectories.svg)
+Calibrate demand and economics using real store-level data; estimate censored demand; compare calibrated protection-period reserves and tuned baselines on separate validation sets; introduce nonanticipative scenario-tree optimization or CVaR; add storage and transfer decisions; evaluate longer operating periods with hard or risk-limited service requirements. Expand the scale study with diverse independent networks before making performance claims.
 
-## 4. Reproduction
+## Reproducibility
 
-Python 3.10+:
+Python 3.10+ from a repository checkout:
 
 ```bash
 git clone https://github.com/xsm-math/inventory-allocation.git
 cd inventory-allocation
 python -m venv .venv
-source .venv/bin/activate
-# Windows PowerShell: .venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+# Windows PowerShell:
+.venv\Scripts\Activate.ps1
+# macOS/Linux: source .venv/bin/activate
+python -m pip install -r requirements.txt
+python scripts/reproduce.py
+```
 
-python -m unittest discover -s tests -v
-python -m supplychain.benchmark --seeds 12 --days 21 --time-limit 2
-python -m supplychain.scaling
+The single command runs tests, the full comparison, sensitivity and forecast studies, scaling checks, and regenerates README/result tables. Allow several minutes depending on hardware; solver time limits can make a complete run longer. `requirements-lock.txt` records the exact environment used for committed results (Python version is in the manifests); older Python versions may need the compatible ranges in `requirements.txt`.
+
+For one complete decision ledger:
+
+```bash
+python -m supplychain --policy mpc_safety --regime supply_shock --seed 101 --days 21
 python server.py
 ```
 
-Open http://127.0.0.1:8000 for aggregate comparisons, representative trajectories, and bounded single-episode runs. The interactive endpoint uses a shorter 0.5-second per-day solve limit and reports its own solver outcomes. The interface and server run locally.
+The existing local interface is at http://127.0.0.1:8000. The interface supports all four policies and displays aggregate results and individual decision ledgers. The original single-period study remains available at `/single-period` and in [its report](docs/single_period_study.md).
 
-For a complete action trace:
-
-```bash
-python -m supplychain --policy mpc_buffered --regime supply_shock --seed 101 --days 21
-```
-
-Configuration is centralized in [configs/network.json](configs/network.json). Episode summaries, paired estimates, representative ledgers, and machine-readable reports are in [results/network](results/network). Environment versions and the configuration checksum accompany the outputs.
-
-## 5. Implementation and validation
-
-| Module | Responsibility |
+| Directory | Purpose |
 |---|---|
-| `network.py` | Input validation, observable stock/pipelines, action constraints. |
-| `forecast.py` | Historical forecasts and synthetic demand generation. |
-| `planner.py` | Sparse variable/constraint assembly, MILP solution, incumbent checks. |
-| `policies.py` | Base-stock, point-forecast, and buffered controllers. |
-| `simulation.py` | Event execution, accounting, conservation, and episode metrics. |
-| `benchmark.py` / `scaling.py` | Replicated comparisons, ablations, plots, and size checks. |
+| `supplychain/` | Existing source package: forecasting, network state, MILP, policies, simulator, experiments. |
+| `configs/`, `data/` | Network parameters and synthetic-data provenance. |
+| `tests/` | Model, simulator, forecasting, accounting, and regression validation. |
+| `scripts/` | One-command reproduction and evidence-based report generation. |
+| `results/network/`, `results/research/` | Raw metrics, solver diagnostics, plots, source/config hashes. |
+| `docs/` | Formulation, protocols, findings, and [Chinese interview dossier](docs/interview_zh.md). |
 
-Thirteen local tests cover the original marginal allocator and the network extension. They include independent small-instance enumeration, transport delays, budget and capacity violations, forced fallback, paired-demand consistency, and a future-demand perturbation check. Every simulated action is also checked for feasibility and product-level mass conservation. A GitHub Actions workflow defines the same test command; remote execution status should be checked on the repository's Actions tab.
-
-## 6. Scope and references
-
-The study uses synthetic uncensored demand and fixed economic parameters. It does not include inventory censoring, random transport delays, hard service guarantees, physical storage capacities, inter-warehouse transfers, vehicle routing, or learned policy selection. The buffered controller is a heuristic forecast adjustment, not robust optimization. Terminal salvage, finite-horizon restrictions, and baseline coverage choices affect the comparison. Claims of operational savings would require calibrated data and prospective evaluation.
-
-Engineering references include [Stockpyl](https://github.com/LarrySnyder/stockpyl), [COIN-OR PuLP's transportation example](https://coin-or.github.io/pulp/CaseStudies/a_transportation_problem.html), and [SciPy/HiGHS](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.milp.html). [Reference notes](docs/engineering_references.md) identify what was adopted conceptually and what differs. No new optimization algorithm is claimed.
-
-The earlier separable allocation study remains available as a [single-period companion experiment](docs/single_period_study.md), with its exact marginal-allocation proof, original results, and `python experiment.py` reproduction command. Its interface is at `/single-period`.
+The established package is retained rather than duplicated under `src/`. Demand seeds are fixed; solver versions and time limits can change selected incumbents across platforms. Manifests record source/config hashes and library versions. No exact cross-platform timing or incumbent equality is promised. Engineering attribution is preserved in [reference notes](docs/engineering_references.md).

@@ -1,13 +1,13 @@
 warehouses,channels,products,horizon,repeat,solver_status,solver_message,solve_seconds,variables,constraints,integer_variables,mip_gap,fallback,planning_objective,max_constraint_violation
-2,4,2,3,0,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.011658515000021907,248,131,156,0.0031973756150903087,False,-45725.0,0.0
-2,4,2,3,1,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.008497873000010259,248,131,156,0.0031973756150903087,False,-45725.0,0.0
-2,4,2,3,2,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.007028611000009732,248,131,156,0.0031973756150903087,False,-45725.0,0.0
-3,5,2,5,0,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.023244998999985,670,320,480,0.0026572175973368414,False,-75040.9,0.0
-3,5,2,5,1,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.018024084999979095,670,320,480,0.0026572175973368414,False,-75040.9,0.0
-3,5,2,5,2,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.017465725999954884,670,320,480,0.0026572175973368414,False,-75040.9,0.0
-5,10,2,7,0,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.11445217799996499,2680,1126,2170,0.007512858283919998,False,-160752.4,0.0
-5,10,2,7,1,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.11355364899998222,2680,1126,2170,0.007512858283919998,False,-160752.4,0.0
-5,10,2,7,2,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.14158136300000024,2680,1126,2170,0.007512858283919998,False,-160752.4,0.0
-8,20,2,7,0,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.45106420600006913,7824,3029,6832,0.010741847371610571,False,-297164.9,0.0
-8,20,2,7,1,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.4402207709999857,7824,3029,6832,0.010741847371610571,False,-297164.9,0.0
-8,20,2,7,2,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.4593377439999813,7824,3029,6832,0.010741847371610571,False,-297164.9,0.0
+2,4,2,3,0,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.02034999999887077,248,131,156,0.0031973756150903087,False,-45725.0,0.0
+2,4,2,3,1,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.0160390999953961,248,131,156,0.0031973756150903087,False,-45725.0,0.0
+2,4,2,3,2,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.016152900003362447,248,131,156,0.0031973756150903087,False,-45725.0,0.0
+3,5,2,5,0,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.02829530000599334,670,320,480,0.0026572175973368414,False,-75040.9,0.0
+3,5,2,5,1,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.026914900001429487,670,320,480,0.0026572175973368414,False,-75040.9,0.0
+3,5,2,5,2,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.027704300002369564,670,320,480,0.0026572175973368414,False,-75040.9,0.0
+5,10,2,7,0,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.14239119999547256,2680,1126,2170,0.007512858283919998,False,-160752.4,0.0
+5,10,2,7,1,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.13952029999927618,2680,1126,2170,0.007512858283919998,False,-160752.4,0.0
+5,10,2,7,2,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.1460099000032642,2680,1126,2170,0.007512858283919998,False,-160752.4,0.0
+8,20,2,7,0,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.48901170000317506,7824,3029,6832,0.00987628253148066,False,-297419.6,0.0
+8,20,2,7,1,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.463000199997623,7824,3029,6832,0.00987628253148066,False,-297419.6,0.0
+8,20,2,7,2,0,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.4629110000023502,7824,3029,6832,0.00987628253148066,False,-297419.6,0.0

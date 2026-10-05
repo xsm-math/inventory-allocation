@@ -23,5 +23,7 @@
   "channel_holding": [1.2, 0.6],
   "salvage_fraction": 0.8,
   "service_target": 0.8,
-  "service_slack_penalty": 8.0
+  "service_slack_penalty": 8.0,
+  "safety_quantile": 0.9,
+  "safety_slack_penalty": 8.0
 }

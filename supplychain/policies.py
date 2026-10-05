@@ -1,10 +1,10 @@
 """Base-stock benchmark and optimization policies sharing the same observations."""
 import numpy as np
 from .network import Action, validate_action
-from .forecast import predict
+from .forecast import predict, safety_stock
 from .planner import plan
 
-POLICIES=('base_stock','mpc','mpc_buffered')
+POLICIES=('base_stock','mpc','mpc_buffered','mpc_safety')
 
 def base_stock(net,state,forecast,day,supply_factor=1.):
     action=Action.zero(net)
@@ -57,6 +57,9 @@ def decide(net,state,history,day,remaining,policy,horizon=5,supply_factor=1.,tim
     demand=predict(history,H,buffer=.4 if policy=='mpc_buffered' else 0.)
     if policy=='base_stock':return base_stock(net,state,demand,day,supply_factor)
     try:
+        if policy=='mpc_safety':
+            reserve=safety_stock(history,net.supplier_lead,net.raw.get('safety_quantile',.9))
+            return plan(net,state,demand,day,supply_factor,time_limit,safety=reserve)
         return plan(net,state,demand,day,supply_factor,time_limit)
     except RuntimeError as exc:
         action=base_stock(net,state,demand,day,supply_factor)

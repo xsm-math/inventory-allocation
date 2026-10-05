@@ -80,7 +80,7 @@ class Handler(BaseHTTPRequestHandler):
                     raise ValueError('Seed, days or horizon outside supported bounds')
             policy = config.get('policy', 'mpc_buffered')
             regime = config.get('regime', 'normal')
-            if policy not in ('base_stock','mpc','mpc_buffered') or regime not in ('normal','surge','supply_shock'):
+            if policy not in ('base_stock','mpc','mpc_buffered','mpc_safety') or regime not in ('normal','surge','supply_shock'):
                 raise ValueError('Unknown policy or regime')
             acquired = SIMULATION_LOCK.acquire(blocking=False)
             if not acquired:

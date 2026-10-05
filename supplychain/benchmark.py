@@ -16,8 +16,8 @@ from .network import Network
 from .simulation import run_episode
 
 ROOT=Path(__file__).resolve().parents[1]
-LABELS={'base_stock':'Base stock','mpc':'Rolling MILP','mpc_buffered':'Buffered MILP'}
-COLORS={'base_stock':'#8795a5','mpc':'#236d91','mpc_buffered':'#258a75'}
+LABELS={'base_stock':'Base stock','mpc':'Rolling MILP','mpc_buffered':'Buffered MILP','mpc_safety':'Safety-stock MILP'}
+COLORS={'base_stock':'#8795a5','mpc':'#236d91','mpc_buffered':'#258a75','mpc_safety':'#b26b32'}
 
 def intervals(values):
     values=np.asarray(values,float);n=len(values)
@@ -50,7 +50,7 @@ def main():
         aggregate.append(dict(regime=regime,policy=policy,n=len(group),economic_value=value,value_ci95=ci,fill_rate=fill,fill_ci95=fill_ci,worst_channel_fill=group.worst_channel_fill.mean(),shipping=group.shipping.mean(),dispatch=group.dispatch.mean(),holding=group.holding.mean(),fallback_days=int(group.fallback_days.sum()),limit_days=int(group.limit_days.sum()),max_mip_gap=group.max_mip_gap.max(),mean_solve_seconds=group.mean_solve_seconds.mean()))
     for regime in df.regime.unique():
         group=df[df.regime==regime].pivot(index='seed',columns='policy',values='economic_value')
-        for policy in ['mpc','mpc_buffered']:
+        for policy in ['mpc','mpc_buffered','mpc_safety']:
             gain,ci=intervals(group[policy]-group.base_stock)
             comparisons.append(dict(regime=regime,policy=policy,mean_paired_gain=gain,ci95_halfwidth=ci,relative_gain=gain/group.base_stock.mean(),wins=int((group[policy]>group.base_stock).sum()),n=args.seeds))
     pd.DataFrame(aggregate).to_csv(out/'aggregate.csv',index=False)
@@ -76,11 +76,11 @@ def main():
 def plot(df,ag,traces,out):
     plt.rcParams.update({'font.size':10,'axes.spines.top':False,'axes.spines.right':False,'svg.hashsalt':'inventory-network-study','svg.fonttype':'none'})
     fig,ax=plt.subplots(1,2,figsize=(12,4.8),layout='constrained')
-    regimes=['normal','surge','supply_shock'];xx=np.arange(3);width=.24
+    regimes=['normal','surge','supply_shock'];xx=np.arange(3);width=.19
     for i,p in enumerate(LABELS):
         rows=ag[ag.policy==p].set_index('regime').loc[regimes]
-        ax[0].bar(xx+(i-1)*width,rows.economic_value/1000,width,yerr=rows.value_ci95/1000,color=COLORS[p],label=LABELS[p],capsize=3)
-        ax[1].bar(xx+(i-1)*width,rows.fill_rate*100,width,yerr=rows.fill_ci95*100,color=COLORS[p],capsize=3)
+        ax[0].bar(xx+(i-1.5)*width,rows.economic_value/1000,width,yerr=rows.value_ci95/1000,color=COLORS[p],label=LABELS[p],capsize=3)
+        ax[1].bar(xx+(i-1.5)*width,rows.fill_rate*100,width,yerr=rows.fill_ci95*100,color=COLORS[p],capsize=3)
     for a in ax:a.set_xticks(xx,['Normal','Demand surge','Supply shock']);a.grid(axis='y',alpha=.15);a.set_axisbelow(True)
     ax[0].set_ylabel('Episode economic value / thousand CNY');ax[1].set_ylabel('Aggregate fill rate / %');ax[1].set_ylim(0,105)
     ax[0].legend(frameon=False,fontsize=9);fig.suptitle('Independent demand seeds; 95% t intervals across episodes')

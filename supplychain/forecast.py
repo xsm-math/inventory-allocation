@@ -1,5 +1,22 @@
 """Forecasts based exclusively on past observed (uncensored) demand."""
 import numpy as np
+from statistics import NormalDist
+
+
+def safety_stock(history, protection_days=2, quantile=.9):
+    """Normal approximation to protection-period forecast error; no service guarantee.
+
+    Residuals are generated with expanding past-only windows, using at most the
+    last 28 observations. Demand correlation and non-normal tails remain limitations.
+    """
+    a = np.asarray(history, float)
+    if (a.ndim != 3 or len(a) < 14 or not np.isfinite(a).all()
+            or (a < 0).any() or protection_days < 1 or not .5 <= quantile < 1):
+        raise ValueError('Invalid safety-stock history, protection period or quantile')
+    residuals = np.array([a[t] - predict(a[:t], 1)[0]
+                          for t in range(max(7, len(a)-28), len(a))])
+    sigma = residuals.std(axis=0, ddof=1)
+    return np.ceil(NormalDist().inv_cdf(quantile)*sigma*np.sqrt(protection_days)).astype(int)
 
 def predict(history, horizon, buffer=0.):
     a = np.asarray(history,float)

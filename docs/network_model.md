@@ -84,3 +84,18 @@ $$
 $$
 
 where total stock includes in-transit quantities. Dispatch changes location but never creates or consumes product. Arrival schedules, inventory nonnegativity, shared budgets, handling limits, and lane capacities are validated on every executed action.
+
+
+## Explicit safety-stock extension
+
+The `mpc_safety` controller keeps point forecasts. For each node/product, one-step residuals $r_j=d_j-\widehat d_j$ use only history available before $j$, for at most the last 28 days, requiring at least seven prior observations. Set
+
+$$SS_{cp}=\left\lceil\Phi^{-1}(0.9)s(r_{cp})\sqrt{L^q}\right\rceil.$$
+
+Add nonnegative slack $b_{tcp}$ and constraints
+
+$$I^C_{tcp}+b_{tcp}\ge a_t SS_{cp},\qquad a_t=\min\{1,(H-1-t)/L^q\}.$$
+
+The objective adds $8\sum_{t,c,p}b_{tcp}$. This planning regularizer is excluded from realized accounting. The reserve is released near the horizon boundary; at a one-day horizon it vanishes. Service slack remains separate. Reserve slack preserves feasibility under scarcity.
+
+This is a normal independent-error approximation with a supplier-lead protection scale, not a calibrated echelon safety-stock formula. Ground transport, serial dependence, forecast bias, and capacity delays are not captured. The 0.9 quantile is distinct from the 0.8 forecast-service target and realized fill rate. Sensitivity changes the forecast-service target, not the reserve quantile. Both parameters are fixed before the main experiment.

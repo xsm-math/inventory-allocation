@@ -24,7 +24,7 @@ class Model:
         return result,A
 
 
-def plan(net,state,forecast,day=0,supply_factor=1.,time_limit=2.,gap=.02, service=True):
+def plan(net,state,forecast,day=0,supply_factor=1.,time_limit=2.,gap=.02, service=True, safety=None):
     d=np.asarray(forecast,float)
     if d.ndim!=3 or d.shape[1:]!=(net.C,net.P) or len(d)<1 or not np.isfinite(d).all() or (d<0).any() or (d%1).any():
         raise ValueError('Forecast must be integer horizon/channel/product demand')
@@ -51,6 +51,17 @@ def plan(net,state,forecast,day=0,supply_factor=1.,time_limit=2.,gap=.02, servic
     iccost[-1]-=net.salvage_fraction*net.unit_cost
     iw=m.vars((H,net.W,net.P),iwcost)
     ic=m.vars((H,net.C,net.P),iccost)
+    if safety is not None:
+        safety=np.asarray(safety,float)
+        if safety.shape != (net.C,net.P) or not np.isfinite(safety).all() or (safety<0).any():
+            raise ValueError('Invalid safety-stock target')
+        buffer_slack=m.vars((H,net.C,net.P),net.raw.get('safety_slack_penalty',8.))
+        # Release the reserve as the finite episode/horizon approaches its end.
+        for t in range(H):
+            taper=min(1.,(H-1-t)/net.supplier_lead)
+            for c in range(net.C):
+                for p in range(net.P):
+                    m.constraint([(ic[t,c,p],1),(buffer_slack[t,c,p],1)],lower=taper*safety[c,p])
     sold=m.vars(d.shape,-net.price,d)
     lost=m.vars(d.shape,net.shortage_penalty,d)
     slack=m.vars((net.C,net.P),net.service_slack_penalty if service else 0)
@@ -90,6 +101,8 @@ def plan(net,state,forecast,day=0,supply_factor=1.,time_limit=2.,gap=.02, servic
     if res.x is None:
         raise RuntimeError(f'No feasible incumbent: {res.message}')
     v=res.x
+    if not np.isfinite(v).all() or not np.isfinite(res.fun):
+        raise RuntimeError('Nonfinite solver incumbent')
     violation=max(float(np.maximum(np.asarray(m.lo)-A@v,0).max()),float(np.maximum(A@v-np.asarray(m.hi),0).max()),float(np.maximum(-v,0).max()),float(np.maximum(v-np.asarray(m.ub),0).max()))
     integer_error=float(np.abs(v[np.asarray(m.integer,dtype=bool)]-np.rint(v[np.asarray(m.integer,dtype=bool)])).max())
     if violation>1e-5 or integer_error>1e-5:
