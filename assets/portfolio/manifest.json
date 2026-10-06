@@ -1,0 +1,10 @@
+{
+  "project": "inventory",
+  "chart": "summary.svg",
+  "scope": "Presentation from existing aggregate outputs; no refitting or new experiment.",
+  "inputs": {
+    "results/network/paired_comparisons.csv": "89d6759244f705a49f4f7d41e261300be4aef93ed0f900809ab6c539856a6dac",
+    "results/network/aggregate.csv": "0e6212f4236921377cbbe36b0850448fdeaa22375de13d9e99926690bb9c7fbd"
+  },
+  "matplotlib": "3.11.2"
+}

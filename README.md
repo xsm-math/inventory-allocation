@@ -1,18 +1,31 @@
-# Inventory Networks under Demand and Supply Uncertainty
+# Inventory Allocation Optimization
 
-**A computational study of rolling mixed-integer allocation, forecast uncertainty, and service–cost trade-offs.**
+**Operations Research & Decision Optimization** · Quantitative Decision Science · Selected Project 01 · Flagship
+
+![Python: Research](https://img.shields.io/badge/Python-Research-236d91?style=flat-square) ![Focus: MILP](https://img.shields.io/badge/Focus-MILP-236d91?style=flat-square) ![Evidence: Reproducible](https://img.shields.io/badge/Evidence-Reproducible-258a75?style=flat-square)
+
+[Portfolio](https://github.com/xsm-math) · [01 Inventory](https://github.com/xsm-math/inventory-allocation) · [02 Credit Risk](https://github.com/xsm-math/Risk-Modeling) · [03 Gold Allocation](https://github.com/xsm-math/invest)
+
+| Project Summary | Rolling replenishment and allocation in a multi-warehouse, multi-channel, multi-SKU network; the flagship optimization study. |
+|---|---|
+| Research Question | How do forecast uncertainty and shared capacities change the economic value and service of rolling inventory decisions? |
+| Methods | MILP, past-only demand forecasts, buffered/safety-stock policies, paired Monte Carlo evaluation and one-factor sensitivity. |
+| Key Results | Across 144 synthetic episodes, buffered MILP improves mean economic value by **3.06% / 10.31% / 8.33%** in normal / surge / supply-shock regimes; aggregate fill rates remain below base stock. |
+| Evidence | [Paired comparisons](results/network/paired_comparisons.csv), [aggregate service](results/network/aggregate.csv), [experiment provenance](results/network/metadata.json). These are simulated outcomes, not realized operational savings. |
+
+![Economic gain and service trade-off](assets/portfolio/summary.svg)
 
 ## Abstract
 
 This project studies joint replenishment and allocation in a multi-warehouse, multi-store-channel, multi-SKU inventory network. A rolling mixed-integer linear program coordinates procurement, delayed ground shipments, and same-day express shipments under shared capacities and fixed dispatch charges. Four policies are evaluated using paired Monte Carlo trajectories: a base-stock heuristic, point-forecast MILP, buffered-forecast MILP, and explicit safety-stock MILP. The study separates planning objectives from realized accounting, compares service and economic value, and examines sensitivity to service targets, shortage costs, holding costs, and transport capacity. All data are synthetic; the contribution is a reproducible computational experiment and validated implementation, not a new optimization algorithm or evidence of operational savings.
 
-## Problem
+## Problem Definition
 
 Three warehouses supply five retail channels/store groups with two SKUs over 21 daily decisions. Ground shipments take one or two days; express takes zero days; procurement takes two days. Orders are placed before the day's demand is revealed. Unserved demand is lost. The decision problem is to allocate limited inventory and transport capacity while balancing heterogeneous sales margins, shortage penalties, freight, fixed dispatch charges, and holding costs.
 
 All policies receive identical uncensored historical demand, starting inventory, costs, and today's supply restrictions. Future demand and disruption recovery dates are withheld. See [data provenance](data/README.md) and the [event sequence and model](docs/network_model.md).
 
-## Formulation
+## Mathematical Formulation
 
 Integer orders $q_{twp}$ and shipments $x_{twcmp}$ are coupled with binary lane activations $z_{twcm}$. Inventory, sales, lost demand, and regularization slack are continuous nonnegative auxiliary variables. The objective is
 
@@ -21,6 +34,10 @@ $$\min\; C_{procurement}+C_{freight}+C_{dispatch}+C_{holding}+C_{lost}+C_{servic
 Constraints enforce warehouse and channel inventory balance with pipeline arrivals, supplier limits, procurement budgets, shared warehouse throughput, and lane volume capacity $\sum_p v_p x_{twcmp}\le K_m z_{twcm}$. A soft horizon-service target satisfies $\sum_t y_{tcp}+e_{cp}\ge\rho\sum_t\widehat d_{tcp}$. Fixed dispatch costs and indivisible shipment units motivate MILP. The [full formulation](docs/network_model.md) defines every term and boundary convention.
 
 The safety-stock variant adds $I^C_{tcp}+b_{tcp}\ge a_t SS_{cp}$, with $SS_{cp}=\lceil z_{0.9}\widehat\sigma_{cp}\sqrt{L^q}\rceil$ estimated from past-only forecast residuals. The taper releases reserve near the planning boundary. Slack is penalized to retain feasibility under shortages. This normal approximation is a policy heuristic, not a chance constraint or guaranteed 90% fill rate.
+
+## Data
+
+All demand is synthetic. The reference network has three warehouses, five retail channels, two SKUs, 42 historical days and 21 daily operating decisions. Costs and capacities are illustrative CNY parameters in [the configuration](configs/network.json). [Data provenance](data/README.md) specifies the process and information available to every policy.
 
 ## Methodology
 
@@ -37,7 +54,7 @@ The safety-stock variant adds $I^C_{tcp}+b_{tcp}\ge a_t SS_{cp}$, with $SS_{cp}=
 
 The controller is deterministic forecast-based optimization. Monte Carlo is used for evaluation, not multistage stochastic programming. Planning service/reserve penalties are regularizers excluded from the realized economic ledger. Realized shortage penalties are included.
 
-## Experiments
+## Experimental Design
 
 The main study uses 12 seeds × three regimes × four policies = 144 episodes. Regimes are normal demand, a 45% demand surge, and a supplier-capacity/budget disruption. A matched horizon ablation retains the original 3/5/7-day study. The sensitivity study uses six separate seeds and three levels for each of four factors, comparing base stock and safety-stock MILP. Reference cells are reused; there are 108 unique sensitivity episodes. No parameter search or post-hoc best-policy selection is performed.
 
@@ -83,6 +100,14 @@ Paired, unadjusted Student-t intervals describe seed variation within the synthe
 
 Complete [research tables](docs/research_results.md), [interpretation](docs/findings.md), [episode metrics](results/network/episodes.csv), [paired comparisons](results/network/paired_comparisons.csv), [forecast evaluation](results/research/forecast_scores.csv), and [sensitivity episodes](results/research/sensitivity_episodes.csv) preserve the evidence. The sensitivity chart shows marginal seed-level intervals; paired differences are in a separate CSV.
 
+## Robustness and Sensitivity Analysis
+
+The [sensitivity study](docs/research_results.md) varies service targets, shortage penalties, holding costs and shared handling/transport capacities across six separate seeds and 108 unique episodes. Matched 3/5/7-day horizons and [scaling diagnostics](results/network/scaling.csv) examine planning choices and runtime. Small synthetic tests do not establish industrial scalability. Cross-cost-setting changes are not pure policy-efficiency effects; compare policies within each setting.
+
+## Business Interpretation
+
+Forecast buffering improves the realized economic ledger in the tested regimes, but the base-stock policy retains higher aggregate service. The point-forecast MILP loses 4.16% economic value in normal demand, showing that a more complex controller is not automatically better. A planner must state the margin, shortage-cost and service priorities before choosing a policy. [Detailed findings](docs/findings.md) retain worst-channel service and accounting boundaries.
+
 ## Limitations
 
 - Synthetic, uncensored demand and illustrative CNY parameters require calibration before business use. Channels represent store groups, not validated individual outlets.
@@ -95,6 +120,19 @@ Complete [research tables](docs/research_results.md), [interpretation](docs/find
 ## Future Work
 
 Calibrate demand and economics using real store-level data; estimate censored demand; compare calibrated protection-period reserves and tuned baselines on separate validation sets; introduce nonanticipative scenario-tree optimization or CVaR; add storage and transfer decisions; evaluate longer operating periods with hard or risk-limited service requirements. Expand the scale study with diverse independent networks before making performance claims.
+
+## Repository Structure
+
+| Directory | Purpose |
+|---|---|
+| `supplychain/` | Existing source package: forecasting, network state, MILP, policies, simulator, experiments. |
+| `configs/`, `data/` | Network parameters and synthetic-data provenance. |
+| `tests/` | Model, simulator, forecasting, accounting, and regression validation. |
+| `scripts/` | One-command reproduction and evidence-based report generation. |
+| `results/network/`, `results/research/` | Raw metrics, solver diagnostics, plots, source/config hashes. |
+| `docs/` | Formulation, experimental protocols, and research findings. |
+
+The established package is retained rather than duplicated under `src/`. Demand seeds are fixed; solver versions and time limits can change selected incumbents across platforms. Manifests record source/config hashes and library versions. No exact cross-platform timing or incumbent equality is promised. Engineering attribution is preserved in [reference notes](docs/engineering_references.md).
 
 ## Reproducibility
 
@@ -122,13 +160,4 @@ python server.py
 
 The existing local interface is at http://127.0.0.1:8000. The interface supports all four policies and displays aggregate results and individual decision ledgers. The original single-period study remains available at `/single-period` and in [its report](docs/single_period_study.md).
 
-| Directory | Purpose |
-|---|---|
-| `supplychain/` | Existing source package: forecasting, network state, MILP, policies, simulator, experiments. |
-| `configs/`, `data/` | Network parameters and synthetic-data provenance. |
-| `tests/` | Model, simulator, forecasting, accounting, and regression validation. |
-| `scripts/` | One-command reproduction and evidence-based report generation. |
-| `results/network/`, `results/research/` | Raw metrics, solver diagnostics, plots, source/config hashes. |
-| `docs/` | Formulation, experimental protocols, and research findings. |
-
-The established package is retained rather than duplicated under `src/`. Demand seeds are fixed; solver versions and time limits can change selected incumbents across platforms. Manifests record source/config hashes and library versions. No exact cross-platform timing or incumbent equality is promised. Engineering attribution is preserved in [reference notes](docs/engineering_references.md).
+Presentation-only summary: `python scripts/portfolio_summary.py --project inventory`. It reads the committed aggregates without running or changing the optimizer; input hashes are recorded in [the chart manifest](assets/portfolio/manifest.json).
