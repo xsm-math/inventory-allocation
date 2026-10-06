@@ -129,6 +129,6 @@ The existing local interface is at http://127.0.0.1:8000. The interface supports
 | `tests/` | Model, simulator, forecasting, accounting, and regression validation. |
 | `scripts/` | One-command reproduction and evidence-based report generation. |
 | `results/network/`, `results/research/` | Raw metrics, solver diagnostics, plots, source/config hashes. |
-| `docs/` | Formulation, protocols, findings, and [Chinese interview dossier](docs/interview_zh.md). |
+| `docs/` | Formulation, experimental protocols, and research findings. |
 
 The established package is retained rather than duplicated under `src/`. Demand seeds are fixed; solver versions and time limits can change selected incumbents across platforms. Manifests record source/config hashes and library versions. No exact cross-platform timing or incumbent equality is promised. Engineering attribution is preserved in [reference notes](docs/engineering_references.md).
