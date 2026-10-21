@@ -1,0 +1,21 @@
+{
+  "checks": "passed",
+  "main_episodes": 144,
+  "additional_matched_baseline_episodes": 36,
+  "max_ledger_error": 2.9103830456733704e-11,
+  "config_sha256": "cd678255014898bc4a7a90e6788f3915800a5424e20cda5f50bd37d5c8ba0ca1",
+  "source_sha256": {
+    "supplychain/__init__.py": "a44189822d7939c1134a4ba252fb5866b2938a0b09baf306b093e6d857ddf8a6",
+    "supplychain/__main__.py": "7a676762c27e5c767c5bab0693335d6d5420a544ef01dc3d2f1bcd0645cb98cd",
+    "supplychain/benchmark.py": "1cc91baff897e08f5ddfd0de5c2feb1cd3499ca0b245a92df7d041cd9d04155b",
+    "supplychain/forecast.py": "4f4163a4d184c7be793e5e580eee31d80939787097e3ac65eaede5a9d7c13320",
+    "supplychain/network.py": "84317f0e531b3ac91751dbf53a562b68b38e4d7aba0f8e565c454a683beed30b",
+    "supplychain/planner.py": "199fc01a6a4e13e2982e0f15a32eff3f77e65b29d184f7f318f9a226f63a588f",
+    "supplychain/policies.py": "8aa3cec357f157fb6b40ddf43b38f37b9fce4d76a33e3b32b08867051fadf5cd",
+    "supplychain/research.py": "49536c523313bdaf68e9371dd86dc1d3cc96494639049de6e94bf1b3eaaeb137",
+    "supplychain/scaling.py": "70592f02d80f181e69817d71d8b96ef403253b335fdadfddac32b5a15d3ae426",
+    "supplychain/simulation.py": "0b129bb786261e486bafeac48d8e587071f5661d969fdbe73c92118b3d40efa4"
+  },
+  "scope": "Same synthetic inputs and policy settings; only base-stock lookahead matched. No new parameter selection or empirical business validation.",
+  "interval": "Seed-paired t intervals, no multiple-testing correction."
+}

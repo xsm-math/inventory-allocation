@@ -3,7 +3,7 @@ from time import perf_counter
 import numpy as np
 from scipy.optimize import milp, Bounds, LinearConstraint
 from scipy.sparse import coo_matrix
-from .network import Action, validate_action
+from .network import Action, validate_action, validate_supply_factor
 
 class Model:
     def __init__(self):
@@ -28,7 +28,8 @@ def plan(net,state,forecast,day=0,supply_factor=1.,time_limit=2.,gap=.02, servic
     d=np.asarray(forecast,float)
     if d.ndim!=3 or d.shape[1:]!=(net.C,net.P) or len(d)<1 or not np.isfinite(d).all() or (d<0).any() or (d%1).any():
         raise ValueError('Forecast must be integer horizon/channel/product demand')
-    if not np.isfinite(supply_factor) or not 0<=supply_factor<=1 or time_limit<=0 or not 0<=gap<=1:
+    validate_supply_factor(supply_factor)
+    if not np.isfinite(time_limit) or not np.isfinite(gap) or time_limit<=0 or not 0<=gap<=1:
         raise ValueError('Invalid solver or supply settings')
     H=len(d);m=Model();start=perf_counter()
     # Integer physical controls; linear inventory and sales variables remain continuous.
@@ -107,7 +108,9 @@ def plan(net,state,forecast,day=0,supply_factor=1.,time_limit=2.,gap=.02, servic
     integer_error=float(np.abs(v[np.asarray(m.integer,dtype=bool)]-np.rint(v[np.asarray(m.integer,dtype=bool)])).max())
     if violation>1e-5 or integer_error>1e-5:
         raise RuntimeError('Solver incumbent failed feasibility checks')
-    diag.update(mip_gap=float(getattr(res,'mip_gap',0)),planning_objective=float(res.fun),max_constraint_violation=violation)
+    reported_gap=getattr(res,'mip_gap',None)
+    reported_gap=float(reported_gap) if reported_gap is not None and np.isfinite(reported_gap) else None
+    diag.update(mip_gap=reported_gap,planning_objective=float(res.fun),max_constraint_violation=violation)
     action=Action(np.rint(v[q[0]]).astype(int),np.rint(v[x[0]]).astype(int),diag)
     validate_action(net,state,action,supply_factor)
     return action

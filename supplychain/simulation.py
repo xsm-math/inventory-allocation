@@ -48,7 +48,7 @@ def execute(net,state,action,day,demand,supply_factor=1.):
     return record,sold,lost
 
 
-def run_episode(net,seed=101,days=20,regime='normal',policy='mpc',horizon=5,time_limit=2.,capture=False):
+def run_episode(net,seed=101,days=20,regime='normal',policy='mpc',horizon=5,time_limit=2.,capture=False,baseline_horizon=None):
     if days<1 or horizon<1:raise ValueError('Positive days and horizon required')
     training,actual=synthetic_history(net,seed,days,regime)
     state=State.initial(net);history=training.copy()
@@ -60,7 +60,7 @@ def run_episode(net,seed=101,days=20,regime='normal',policy='mpc',horizon=5,time
         # Only the current supply restriction is observed; its future duration is unknown.
         factor=.45 if regime=='supply_shock' and days//3<=day<2*days//3 else 1.
         forecast=predict(history,1)[0]
-        action=decide(net,state,history,day,days-day,policy,horizon,factor,time_limit)
+        action=decide(net,state,history,day,days-day,policy,horizon,factor,time_limit,baseline_horizon=baseline_horizon)
         record,sold,lost=execute(net,state,action,day,actual[day],factor)
         record.update(seed=seed,regime=regime,policy=policy,supply_factor=factor)
         records.append(record);channel_sold+=sold;channel_demand+=actual[day]
@@ -80,10 +80,11 @@ def run_episode(net,seed=101,days=20,regime='normal',policy='mpc',horizon=5,time
              'forecast_wape':sum(errors)/demand_total if demand_total else 0.,
              'fallback_days':sum(r['fallback'] for r in records),
              'limit_days':sum(r['solver_status']==1 for r in records),
-             'max_mip_gap':max(gaps,default=0.),'mean_solve_seconds':float(np.mean([r['solve_seconds'] for r in records])),
+             'max_mip_gap':max(gaps,default=None),'gap_observations':len(gaps),'mean_solve_seconds':float(np.mean([r['solve_seconds'] for r in records])),
              'max_variables':max(r['variables'] for r in records),'max_constraints':max(r['constraints'] for r in records),
              'demand_sha256':hashlib.sha256(actual.tobytes()).hexdigest()}
     for k in ['revenue','procurement','shipping','dispatch','holding','shortage_penalty','express_units','ground_units','active_dispatches']:
         summary[k]=sum(r[k] for r in records)
+    if baseline_horizon is not None:summary['baseline_horizon']=baseline_horizon
     channels=[{'channel':net.raw['channels'][c],'sold':int(channel_sold[c].sum()),'demand':int(channel_demand[c].sum()),'fill_rate':float(channel_sold[c].sum()/max(channel_demand[c].sum(),1))} for c in range(net.C)]
     return {'summary':summary,'daily':records,'channels':channels,'decisions':decisions}

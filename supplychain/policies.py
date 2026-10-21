@@ -51,9 +51,13 @@ def base_stock(net,state,forecast,day,supply_factor=1.):
     return action
 
 
-def decide(net,state,history,day,remaining,policy,horizon=5,supply_factor=1.,time_limit=2.):
+def decide(net,state,history,day,remaining,policy,horizon=5,supply_factor=1.,time_limit=2.,baseline_horizon=None):
     if policy not in POLICIES:raise ValueError('Unknown policy')
+    if baseline_horizon is not None and (isinstance(baseline_horizon,(bool,np.bool_))
+            or not isinstance(baseline_horizon,(int,np.integer)) or baseline_horizon<1):
+        raise ValueError('Baseline horizon must be a positive integer')
     H=min(remaining,max(horizon,net.supplier_lead+int(net.ground_lead.max())+2)) if policy=='base_stock' else min(remaining,horizon)
+    if policy=='base_stock' and baseline_horizon is not None:H=min(remaining,baseline_horizon)
     demand=predict(history,H,buffer=.4 if policy=='mpc_buffered' else 0.)
     if policy=='base_stock':return base_stock(net,state,demand,day,supply_factor)
     try:

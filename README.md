@@ -17,6 +17,8 @@
 
 ## Abstract
 
+**Technical audit (2026-10-21):** [Findings, fixes and 26-test verification](docs/TECHNICAL_AUDIT.md) · [Matched-horizon experiment](results/audit/2026-10-21/matched_comparisons.csv). Primary reference results are preserved.
+
 This project studies joint replenishment and allocation in a multi-warehouse, multi-store-channel, multi-SKU inventory network. A rolling mixed-integer linear program coordinates procurement, delayed ground shipments, and same-day express shipments under shared capacities and fixed dispatch charges. Four policies are evaluated using paired Monte Carlo trajectories: a base-stock heuristic, point-forecast MILP, buffered-forecast MILP, and explicit safety-stock MILP. The study separates planning objectives from realized accounting, compares service and economic value, and examines sensitivity to service targets, shortage costs, holding costs, and transport capacity. All data are synthetic; the contribution is a reproducible computational experiment and validated implementation, not a new optimization algorithm or evidence of operational savings.
 
 ## Problem Definition
@@ -147,9 +149,10 @@ python -m venv .venv
 # macOS/Linux: source .venv/bin/activate
 python -m pip install -r requirements.txt
 python scripts/reproduce.py
+python scripts/audit.py
 ```
 
-The single command runs tests, the full comparison, sensitivity and forecast studies, scaling checks, and regenerates README/result tables. Allow several minutes depending on hardware; solver time limits can make a complete run longer. `requirements-lock.txt` records the exact environment used for committed results (Python version is in the manifests); older Python versions may need the compatible ranges in `requirements.txt`.
+Reproduction runs tests, the full comparison, sensitivity/forecast studies and scaling checks into `results/reproduced/`, with a report and input/code/result hashes. It preserves the committed README and reference tables. The audit reconciles the ledger and adds 36 matched-horizon baseline episodes under `results/audit-generated/`. Use `--output` for a fresh run directory. Allow several minutes depending on hardware. `requirements-lock.txt` records the Python 3.14 reference environment; older Python versions may need the compatible ranges in `requirements.txt`.
 
 For one complete decision ledger:
 

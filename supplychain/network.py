@@ -36,6 +36,12 @@ class Network:
             raise ValueError('Positive costs, volumes and integral positive lead times required')
         if not 0 <= self.salvage_fraction <= 1 or not 0 <= self.service_target <= 1:
             raise ValueError('Fractions must lie in [0,1]')
+        quantile=d.get('safety_quantile',.9)
+        penalty=d.get('safety_slack_penalty',8.)
+        if isinstance(quantile,bool) or not np.isfinite(quantile) or not .5 <= quantile < 1:
+            raise ValueError('safety_quantile must lie in [0.5,1)')
+        if isinstance(penalty,bool) or not np.isfinite(penalty) or penalty < 0:
+            raise ValueError('safety_slack_penalty must be finite and nonnegative')
         self.supplier_lead = int(self.supplier_lead)
         self.lead = np.stack([self.ground_lead,np.zeros_like(self.ground_lead)],axis=-1)
         self.freight = np.stack([self.ground_cost,self.ground_cost*self.express_cost_multiplier],axis=-1)
@@ -76,7 +82,14 @@ class Action:
         return cls(np.zeros((net.W,net.P),int),np.zeros((net.W,net.C,2,net.P),int))
 
 
+def validate_supply_factor(supply_factor):
+    if (isinstance(supply_factor,(bool,np.bool_)) or np.ndim(supply_factor)
+            or not np.isfinite(supply_factor) or not 0 <= supply_factor <= 1):
+        raise ValueError('Supply factor must be a finite scalar in [0,1]')
+
+
 def validate_action(net, state, action, supply_factor=1.):
+    validate_supply_factor(supply_factor)
     for arr, shape in [(action.orders,(net.W,net.P)),(action.shipments,(net.W,net.C,2,net.P))]:
         if arr.shape != shape or not np.isfinite(arr).all() or (arr < 0).any() or (arr % 1).any():
             raise ValueError('Invalid action shape, sign or integrality')

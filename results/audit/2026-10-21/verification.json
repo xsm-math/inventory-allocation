@@ -1,0 +1,13 @@
+{
+  "audit_date": "2026-10-21",
+  "baseline_commit": "1d1c649",
+  "tests_before": 20,
+  "tests_after": 26,
+  "python": "3.14.7",
+  "compatibility_tests_python_3_12": 26,
+  "reference_comparison": {
+    "economic_value": 0.0,
+    "fill_rate": 0.0,
+    "worst_channel_fill": 0.0
+  }
+}

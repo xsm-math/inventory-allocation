@@ -28,9 +28,10 @@ def main():
     parser.add_argument('--seeds',type=int,default=12)
     parser.add_argument('--days',type=int,default=21)
     parser.add_argument('--time-limit',type=float,default=2.)
+    parser.add_argument('--output',type=Path,default=ROOT/'results/network')
     args=parser.parse_args()
     if args.seeds<2 or args.days<7:parser.error('Use at least 2 seeds and 7 days')
-    out=ROOT/'results/network';out.mkdir(exist_ok=True)
+    out=args.output;out.mkdir(parents=True,exist_ok=True)
     n=Network.load();summaries=[];traces=[];channels=[];examples={}
     for regime in ['normal','surge','supply_shock']:
         for seed in range(101,101+args.seeds):
@@ -47,7 +48,8 @@ def main():
     aggregate=[];comparisons=[]
     for (regime,policy),group in df.groupby(['regime','policy'],sort=False):
         value,ci=intervals(group.economic_value);fill,fill_ci=intervals(group.fill_rate)
-        aggregate.append(dict(regime=regime,policy=policy,n=len(group),economic_value=value,value_ci95=ci,fill_rate=fill,fill_ci95=fill_ci,worst_channel_fill=group.worst_channel_fill.mean(),shipping=group.shipping.mean(),dispatch=group.dispatch.mean(),holding=group.holding.mean(),fallback_days=int(group.fallback_days.sum()),limit_days=int(group.limit_days.sum()),max_mip_gap=group.max_mip_gap.max(),mean_solve_seconds=group.mean_solve_seconds.mean()))
+        known_gap=group.max_mip_gap.max() if group.max_mip_gap.notna().any() else None
+        aggregate.append(dict(regime=regime,policy=policy,n=len(group),economic_value=value,value_ci95=ci,fill_rate=fill,fill_ci95=fill_ci,worst_channel_fill=group.worst_channel_fill.mean(),shipping=group.shipping.mean(),dispatch=group.dispatch.mean(),holding=group.holding.mean(),fallback_days=int(group.fallback_days.sum()),limit_days=int(group.limit_days.sum()),max_mip_gap=known_gap,mean_solve_seconds=group.mean_solve_seconds.mean()))
     for regime in df.regime.unique():
         group=df[df.regime==regime].pivot(index='seed',columns='policy',values='economic_value')
         for policy in ['mpc','mpc_buffered','mpc_safety']:

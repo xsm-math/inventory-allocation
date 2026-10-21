@@ -3,3 +3,5 @@ __pycache__/
 *.pyc
 results/network/*.png
 results/network/episode.json
+results/reproduced/
+results/audit-generated/

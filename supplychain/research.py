@@ -62,10 +62,11 @@ def main():
     parser.add_argument('--seeds', type=int, default=6)
     parser.add_argument('--days', type=int, default=21)
     parser.add_argument('--time-limit', type=float, default=2.)
+    parser.add_argument('--output',type=Path,default=ROOT/'results/research')
     args = parser.parse_args()
     if args.seeds < 2 or args.days < 7:
         parser.error('At least two seeds and seven days required')
-    out = ROOT/'results/research'
+    out = args.output
     out.mkdir(parents=True, exist_ok=True)
     net = Network.load()
     seeds = list(range(201, 201+args.seeds))

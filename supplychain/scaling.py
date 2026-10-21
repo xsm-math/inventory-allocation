@@ -1,5 +1,6 @@
 """Synthetic dimension study; repeated channels are not new empirical observations."""
 import copy
+import argparse
 from pathlib import Path
 import pandas as pd
 from .network import Network,State
@@ -21,6 +22,9 @@ def resized(warehouses,channels):
     return Network(d)
 
 def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--output',type=Path,default=Path(__file__).resolve().parents[1]/'results/network/scaling.csv')
+    args=parser.parse_args()
     rows=[]
     for w,c,h in [(2,4,3),(3,5,5),(5,10,7),(8,20,7)]:
         n=resized(w,c);history,_=synthetic_history(n,101)
@@ -30,7 +34,7 @@ def main():
                 rows.append(dict(warehouses=w,channels=c,products=n.P,horizon=h,repeat=repeat,**a.diagnostics))
             except RuntimeError as exc:
                 rows.append(dict(warehouses=w,channels=c,products=n.P,horizon=h,repeat=repeat,error=str(exc)))
-    out=Path(__file__).resolve().parents[1]/'results/network/scaling.csv'
+    out=args.output;out.parent.mkdir(parents=True,exist_ok=True)
     pd.DataFrame(rows).to_csv(out,index=False)
     print(pd.DataFrame(rows).to_string(index=False))
 
