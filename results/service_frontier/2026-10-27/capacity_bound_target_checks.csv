@@ -1,0 +1,10 @@
+profile,scenario,regime,aggregate_fill_upper_bound,worst_channel_fill_upper_bound,mean_target_ruled_out_by_bound
+relaxed,base,normal,1.0,1.0,False
+relaxed,base,supply_shock,0.9216404702518998,0.9216404702518998,False
+relaxed,base,surge,0.8650420814395502,0.8650420814395502,False
+balanced,base,normal,1.0,1.0,False
+balanced,base,supply_shock,0.9216404702518998,0.9216404702518998,False
+balanced,base,surge,0.8650420814395502,0.8650420814395502,False
+strict,base,normal,1.0,1.0,False
+strict,base,supply_shock,0.9216404702518998,0.9216404702518998,False
+strict,base,surge,0.8650420814395502,0.8650420814395502,True

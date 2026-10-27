@@ -48,8 +48,11 @@ def execute(net,state,action,day,demand,supply_factor=1.):
     return record,sold,lost
 
 
-def run_episode(net,seed=101,days=20,regime='normal',policy='mpc',horizon=5,time_limit=2.,capture=False,baseline_horizon=None):
+def run_episode(net,seed=101,days=20,regime='normal',policy='mpc',horizon=5,time_limit=2.,capture=False,baseline_horizon=None,policy_options=None):
     if days<1 or horizon<1:raise ValueError('Positive days and horizon required')
+    options={} if policy_options is None else dict(policy_options)
+    if set(options)-{'forecast_buffer','review_days','allocation_rule'}:
+        raise ValueError('Unknown policy options')
     training,actual=synthetic_history(net,seed,days,regime)
     state=State.initial(net);history=training.copy()
     records=[];decisions=[];channel_sold=np.zeros((net.C,net.P),int);channel_demand=channel_sold.copy()
@@ -60,7 +63,7 @@ def run_episode(net,seed=101,days=20,regime='normal',policy='mpc',horizon=5,time
         # Only the current supply restriction is observed; its future duration is unknown.
         factor=.45 if regime=='supply_shock' and days//3<=day<2*days//3 else 1.
         forecast=predict(history,1)[0]
-        action=decide(net,state,history,day,days-day,policy,horizon,factor,time_limit,baseline_horizon=baseline_horizon)
+        action=decide(net,state,history,day,days-day,policy,horizon,factor,time_limit,baseline_horizon=baseline_horizon,**options)
         record,sold,lost=execute(net,state,action,day,actual[day],factor)
         record.update(seed=seed,regime=regime,policy=policy,supply_factor=factor)
         records.append(record);channel_sold+=sold;channel_demand+=actual[day]

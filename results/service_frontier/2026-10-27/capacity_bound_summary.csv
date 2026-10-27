@@ -1,0 +1,10 @@
+scenario,regime,aggregate_fill_upper_bound,worst_channel_fill_upper_bound
+base,normal,1.0,1.0
+base,supply_shock,0.9216404702518998,0.9216404702518998
+base,surge,0.8650420814395502,0.8650420814395502
+budget_plus_10pct,normal,1.0,1.0
+budget_plus_10pct,supply_shock,0.9707549936830137,0.9707549936830137
+budget_plus_10pct,surge,0.9134540367360388,0.9134540367360388
+supplier_plus_10pct,normal,1.0,1.0
+supplier_plus_10pct,supply_shock,0.9247635633760884,0.9247635633760886
+supplier_plus_10pct,surge,0.8786848702582533,0.8786848702582533

@@ -1,0 +1,94 @@
+{
+  "script_sha256": "adc63af8c6e7de5704882f0104b5246a3f85b42e6b37b4e91e7e84551274ebe1",
+  "selection_sha256": "dd1fe2c6ff85b74d5b9961c0e2ea370d0f22a0844fa2f4b197ea02700f48355f",
+  "protocol": {
+    "experiment": "service-frontier-v1",
+    "days": 42,
+    "horizon": 5,
+    "time_limit": 2.0,
+    "regimes": [
+      "normal",
+      "surge",
+      "supply_shock"
+    ],
+    "development_seeds": [
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      201,
+      202,
+      203,
+      204,
+      205,
+      206
+    ],
+    "validation_seeds": [
+      10001,
+      10002,
+      10003,
+      10004,
+      10005,
+      10006
+    ],
+    "test_seeds": [
+      20001,
+      20002,
+      20003,
+      20004,
+      20005,
+      20006,
+      20007,
+      20008,
+      20009,
+      20010,
+      20011,
+      20012
+    ],
+    "buffers": [
+      0.0,
+      0.4,
+      0.8
+    ],
+    "review_days": [
+      1,
+      2,
+      4
+    ],
+    "service_penalties": [
+      0.0,
+      8.0,
+      32.0
+    ],
+    "service_profiles": [
+      {
+        "name": "relaxed",
+        "fill": 0.8,
+        "worst": 0.6
+      },
+      {
+        "name": "balanced",
+        "fill": 0.85,
+        "worst": 0.75
+      },
+      {
+        "name": "strict",
+        "fill": 0.9,
+        "worst": 0.8
+      }
+    ],
+    "service_noninferiority_margins": {
+      "fill": 0.01,
+      "worst": 0.03
+    }
+  },
+  "diagnostic_only": true
+}
