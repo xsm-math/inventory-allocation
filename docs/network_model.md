@@ -73,6 +73,16 @@ The sparse formulation uses SciPy's `milp` interface to HiGHS. The benchmark set
 
 The MIP gap refers to the deterministic planning objective and does not bound realized simulation performance. Supplier restrictions observed today are assumed to persist throughout the provisional horizon; their actual future recovery is not disclosed.
 
+The [frozen decision study](decision_study_protocol.md) additionally exposes a
+native HiGHS backend with a checked complete MIP start. The two-stage service
+controller hands its feasible primary incumbent to economic refinement, retaining
+it if refinement cannot improve it. Native bounds, integrality and row residuals
+are checked independently. The study uses four seconds split equally between
+service stages and accepts economic planning precision of 2% relative **or** 25
+illustrative CNY absolute. Quality is measured across all days, including failures;
+it is not inferred from a solver status alone. The earlier SciPy path remains the
+default for reproducing legacy protocols at their recorded source commits.
+
 ## Accounting and conservation
 
 Episode economic value is realized revenue minus procurement, freight, dispatch, holding, and shortage costs, minus the cost of initial inventory, plus an 80%-of-cost terminal credit on all remaining warehouse, channel, and pipeline units. This is a synthetic finite-horizon valuation, not accounting profit. The planning service-slack regularizer is not charged in the realized ledger; actual shortage penalties and fill rates are reported separately.

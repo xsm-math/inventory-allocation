@@ -1,0 +1,13 @@
+regime,mandate,minimum_relaxed_budget_multiplier,necessary_budget_increase_pct,relaxed_infeasible_even_with_unlimited_budget
+normal,value_led,0.61039389243930586,0,False
+normal,channel_protection,0.61039389243930531,0,False
+normal,broad_service,0.69003032617122251,0,False
+normal,strict,0.76966675990313926,0,False
+surge,value_led,0.86486400611476977,0,False
+surge,channel_protection,0.86486400611476988,0,False
+surge,broad_service,0.96810124513330664,0,False
+surge,strict,1.0713384841518432,7.1338484151843184,False
+supply_shock,value_led,0.75825743264806522,0,False
+supply_shock,channel_protection,0.75825743264806478,0,False
+supply_shock,broad_service,0.85687840321390574,0,False
+supply_shock,strict,0.95549937377974725,0,False

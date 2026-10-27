@@ -1,0 +1,21 @@
+{
+  "diagnostic_only": true,
+  "script_sha256": "25e849ac6eb8cbaf0bae5c868951b2fb87d5b3364af7630e4ff40463e206d5eb",
+  "selection_sha256": "51049ada3c0c1d7ad5a20f4376bc87f11ef5aeea1bd13fd272b86f34c2dcccc1",
+  "test_files": {
+    "test_episodes.csv": "270fc916b27cc399e251060c24da4a9022ac33604dec60d331fdb984715d929a",
+    "test_daily.csv": "cedd73eadd1d26010a98d02c0f686bb66e2ea7426a441bfa676b011d2ec97a7c",
+    "test_channels.csv": "27744b1a6006411d8002fa125d1ee21b367a9619a93c7a3476dacaf4e79a5137"
+  },
+  "files": {
+    "paired_effects.csv": "3c5eb0a488666ba6625cd1c8376f52a84838af0f6e8876dd0c1ad74711f8e610",
+    "frozen_budget_value.csv": "caa4f652504a613d66330ce54155cb005d511b2c03e8a3b58a6a260815546c0d",
+    "necessary_budget_lower_bound.csv": "7f6342c3c3724b0d1c9ff39f7f67fc0b33b30a598d50e6d4f0a7db8635776af8",
+    "service.png": "8b9c3be3bc5b4ca214cd25291bed600db7f221f3ecbd977d0d8175440da85ae6",
+    "service.svg": "44532750b729d0e151463816f282616f8327f2f7b23502e92970bc8684e8d4a8",
+    "economics.png": "3561f0d1d91027cb0aa03770f8f8f1eb02b5593bfbd99fbb3aaaa29b8dac96d5",
+    "economics.svg": "3b878529a41fc89637193c09c40932bd21e79e603ec49121af8bb84b2476547d",
+    "decision_rule.png": "54cd0624adc5df6ab4a4ea041d598f05aeb1faa74ff1e8f8d7ad746f65ead43c",
+    "decision_rule.svg": "873f3e3f4117f2724184e74b36f518ccd481c92473af32f6adc3d4ea19b7c295"
+  }
+}

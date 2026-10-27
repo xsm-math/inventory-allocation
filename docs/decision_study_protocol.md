@@ -78,7 +78,7 @@ Record episode service violations and one-sided exact binomial 95% upper bounds
 on failure probability within each regime. Even zero failures in 12 paths gives
 an upper failure probability around 22%; mean gates cannot certify a 90% SLA.
 
-Ex-post resource bounds relax timing, lanes and storage and see realized demand.
+Ex-post resource bounds relax timing, lanes and warehouse handling and see realized demand.
 An upper bound below a target excludes the target on those paths. An upper bound
 above it cannot establish that any implementable controller can meet it.
 Distinguish physical exclusion from inadequacy of the three tested candidates.
@@ -88,3 +88,27 @@ results/decision-study-new`. Stages `validate`, `test`, `report` also work
 separately. Source, network, protocol, native version and evidence hashes are
 checked; changes invalidate the frozen run. Legacy studies reproduce at their
 recorded commits. This study does not show real business savings or deployment.
+
+Then run `python scripts/decision_diagnostics.py --run-dir results/decision-study-new`
+to add descriptive paired effects, figures and the report's constraint clarification.
+The script refreshes the report manifest and records its own source hash. It does
+not modify selection, validation, test or bound inputs. The physical model has no
+storage-volume cap; the effective bound relaxation removes timing and transport /
+handling restrictions.
+
+## Additional resource diagnosis, added after validation froze
+
+The postprocessor also solves an ex-post pooled LP minimizing a **common budget
+cap multiplier** across the held-out paths in one regime. It retains initial
+product totals, arriving supplier quantity totals and a pooled acquisition-cost
+budget for each path. It removes logistics and per-day acquisition timing.
+Average episode aggregate fill and average episode worst-channel fill must meet
+the same mandate thresholds; it does not require each path to meet them.
+
+Its optimum is a necessary budget multiplier for those empirical mean targets
+in this relaxation. A required increase of x% is a lower bound on required
+resources, not a sufficient investment plan. If even this LP is infeasible,
+increasing only the budget cannot meet the relaxed target. This diagnostic was
+added after validation selection and is never used to select or retune policies.
+Analytic one-product tests check cost, initial stock, supplier infeasibility and
+the difference between mean and per-episode service gates.

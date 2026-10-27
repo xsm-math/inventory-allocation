@@ -1,0 +1,17 @@
+mandate,fee_per_day,status,candidate,resource,test_mean_service_pass,test_solver_quality_pass,test_min_fill,test_min_worst,test_net_worst_regime_value,runner_up_candidate,runner_up_resource,robust_value_difference,robust_difference_ci95_low,robust_difference_ci95_high
+value_led,0,test_mean_supported,economic_milp,budget_plus_10pct,True,True,0.83066087303867631,0.6644986379087815,154644.87500000003,service_milp,budget_plus_10pct,4733.3583333333663,4135.7002083333427,5319.4645833333452
+value_led,100,test_mean_supported,economic_milp,budget_plus_10pct,True,True,0.83066087303867631,0.6644986379087815,150444.87500000003,service_milp,budget_plus_10pct,4733.3583333333663,4135.7002083333427,5319.464583333317
+value_led,250,test_mean_supported,economic_milp,budget_plus_10pct,True,True,0.83066087303867631,0.6644986379087815,144144.87500000003,service_milp,budget_plus_10pct,4733.3583333333663,4135.7002083333709,5319.464583333317
+value_led,500,test_mean_supported,economic_milp,budget_plus_10pct,True,True,0.83066087303867631,0.6644986379087815,133644.87500000003,service_milp,budget_plus_10pct,4733.3583333333518,4135.7002083333573,5319.4645833333307
+channel_protection,0,test_mean_supported,service_milp,budget_plus_10pct,True,True,0.82959884769208425,0.80061364238931698,149911.51666666666,stock,budget_plus_10pct,11468.19166666668,10314.374791666662,12755.593125000019
+channel_protection,100,test_mean_supported,service_milp,budget_plus_10pct,True,True,0.82959884769208425,0.80061364238931698,145711.51666666666,stock,budget_plus_10pct,11468.19166666668,10314.374791666662,12755.593125000019
+channel_protection,250,test_mean_supported,service_milp,budget_plus_10pct,True,True,0.82959884769208425,0.80061364238931698,139411.51666666666,stock,budget_plus_10pct,11468.191666666666,10314.37479166666,12755.593125000034
+channel_protection,500,test_mean_supported,service_milp,budget_plus_10pct,True,True,0.82959884769208425,0.80061364238931698,128911.51666666668,stock,budget_plus_10pct,11468.19166666668,10314.374791666689,12755.593125000049
+broad_service,0,test_mean_supported,stock,budget_plus_10pct,True,True,0.87110423423362204,0.83644129823298841,138443.32499999998,,,,,
+broad_service,100,test_mean_supported,stock,budget_plus_10pct,True,True,0.87110423423362204,0.83644129823298841,134243.32499999998,,,,,
+broad_service,250,test_mean_supported,stock,budget_plus_10pct,True,True,0.87110423423362204,0.83644129823298841,127943.325,,,,,
+broad_service,500,test_mean_supported,stock,budget_plus_10pct,True,True,0.87110423423362204,0.83644129823298841,117443.325,,,,,
+strict,0,no_supported_option,,,,,,,,,,,,
+strict,100,no_supported_option,,,,,,,,,,,,
+strict,250,no_supported_option,,,,,,,,,,,,
+strict,500,no_supported_option,,,,,,,,,,,,
