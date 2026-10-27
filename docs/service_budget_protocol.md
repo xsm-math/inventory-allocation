@@ -32,7 +32,17 @@ and the forecast buffer are retained in the economic objective. Service accounti
 is channel-level across products; it is not SKU-level fairness or a chance constraint.
 
 The requested two-second solver limit is split into one second per phase. The
-first phase requests zero relative MIP gap; the second uses the existing 2% gap.
+first phase requests zero relative MIP gap and an absolute deficit gap of 0.001
+(0.1 percentage point); the second uses the existing 2% relative economic gap.
+The native HiGHS `mip_abs_gap` option is forwarded by the pinned SciPy wrapper.
+See [HiGHS option definitions](https://ergo-code.github.io/HiGHS/dev/options/definitions/).
+Only SciPy's known forwarding notice for that option is suppressed; other warnings
+remain visible. The implementation records incumbent minus lower bound and checks
+the declared precision independently of the solver status. Status 0 at an absolute
+gap tolerance is not treated as exact optimality. Exact-gap and precision-unmet
+days are reported separately. If the precision is certified, the second-stage
+service deficit is at most `true_optimal_deficit + 0.001 + tolerance`, up to numerical
+feasibility tolerance; this concerns forecast-conditioned model service only.
 Actual wall times include model assembly and are reported separately. A timed-out
 primary with a checked feasible incumbent may be used, but its service optimum is
 unproven and the cap is relative to that incumbent, not an unknown optimum. Primary
@@ -49,7 +59,10 @@ tolerance do not guarantee service to every channel, episode or future populatio
 
 The protocol is declared in `configs/service_budget.json` before new validation.
 All prior inspected paths, including previous test seeds 20001–20012, are now
-development data. New validation paths use 30001–30004; new test paths use
+development data. An incomplete runtime pilot on 30001–30004 was subsequently
+classified as additional development data; it is archived with its source snapshot
+and is not counted as a completed validation study. Fresh validation paths use
+31001–31004; new test paths use
 40001–40008. The implementation rejects overlap with any earlier partition even
 if the development list is edited. New draws still use the same known synthetic
 generator and network, so they provide no external or real-data validation.
@@ -125,6 +138,7 @@ python -m pip install -r requirements-lock.txt
 python -m unittest discover -s tests -v
 python -m supplychain.service_budget --stage validate --output results/service-budget-new
 python -m supplychain.service_budget --stage test --output results/service-budget-new
+python scripts/service_budget_diagnostics.py --run-dir results/service-budget-new
 python -m supplychain.service_budget --stage report --output results/service-budget-new
 ```
 

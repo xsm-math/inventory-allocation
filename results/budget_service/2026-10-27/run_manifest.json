@@ -1,0 +1,53 @@
+{
+  "fingerprint": {
+    "protocol": "d4fb4074080794cbf4013dc04ef247c939aedee5bdac6a0454a82a4376ee927a",
+    "sources": {
+      "supplychain/__init__.py": "a44189822d7939c1134a4ba252fb5866b2938a0b09baf306b093e6d857ddf8a6",
+      "supplychain/__main__.py": "7a676762c27e5c767c5bab0693335d6d5420a544ef01dc3d2f1bcd0645cb98cd",
+      "supplychain/benchmark.py": "1cc91baff897e08f5ddfd0de5c2feb1cd3499ca0b245a92df7d041cd9d04155b",
+      "supplychain/forecast.py": "4f4163a4d184c7be793e5e580eee31d80939787097e3ac65eaede5a9d7c13320",
+      "supplychain/frontier.py": "6fce42cfa9b70c29a3736596d0d355d3214fd970533caf3e4ce9d15392a7cff4",
+      "supplychain/network.py": "84317f0e531b3ac91751dbf53a562b68b38e4d7aba0f8e565c454a683beed30b",
+      "supplychain/planner.py": "5f6b5450033c6bca95242028c9d66355ecbbd8def47061f6cfb5cc4709e9d446",
+      "supplychain/policies.py": "a236d68875d47598c8128cb21b7975804307a910313e53fad0906be1f91a3125",
+      "supplychain/research.py": "49536c523313bdaf68e9371dd86dc1d3cc96494639049de6e94bf1b3eaaeb137",
+      "supplychain/scaling.py": "70592f02d80f181e69817d71d8b96ef403253b335fdadfddac32b5a15d3ae426",
+      "supplychain/service_budget.py": "65ea69f4c88f0329de5a80349dbb86d962a765471231cd1c44a0e17b9c5852d9",
+      "supplychain/simulation.py": "641c4f3c4a8bc54a14a48574c7b9ead2ce2abc4d00b9ca46f22c3234ca52a192"
+    },
+    "network": "e09299772c61cf6641aab0293f5338f8713e98961806e25f71b8206b1969ea93",
+    "prior_protocol": "c7a47e2a789ac793dbf35ad8b682ed31b64f941aed2fbc76e2ab3df1413f6c13",
+    "bound_script": "adc63af8c6e7de5704882f0104b5246a3f85b42e6b37b4e91e7e84551274ebe1"
+  },
+  "python": "3.14.7",
+  "packages": {
+    "numpy": "2.5.3",
+    "pandas": "2.3.3",
+    "scipy": "1.18.1",
+    "matplotlib": "3.11.2"
+  },
+  "synthetic_data": true,
+  "files": {
+    "accounting_diagnostic_manifest.json": "4a13a64b11fdf9191df3013fd1a704b752e05afe91838be989bc1d8e8e50d4ae",
+    "ACCOUNTING_DIAGNOSTICS.md": "b1056cc6210d7062ef674b64b903bbf8a94cf4e7e530b9c6203b9b7a550dbc8d",
+    "budget_value_per_day.csv": "23985bdd8bf025903187503c7d1549a8a0ffbe6311d6093392a73efb530d22f3",
+    "economics.png": "0261723ffc18bb4f68a20c9c596d7e8e3d791ad363bcc62f11d9d96a9e168f8a",
+    "economics.svg": "2dc0ff00c61da9518f309053c59175ce69168161f2b1afe1da48dc9983cf00ba",
+    "ledger_attribution.csv": "297d17087241840209a174a2972f36f5172d130aa732efdf7a476effbc386fd8",
+    "paired_effects.csv": "75311d2985753791b76107ce132c65831f511f84e23d9e43271f65e4e5df8d86",
+    "REPORT.md": "4f391bf55728b4735f4f2b6f41a11e228406604d610ad5f3ac64837fa1897fd8",
+    "representative_daily.csv": "68767db521d9a37e8d3fcce3c98eb1e6da0212eb4862c1772f3c8395711aaee5",
+    "resource_bound_episodes.csv": "220f2abda912328f3ae4beadfc33bc66eae6735e3fbc2475e06e153060d4a3a2",
+    "resource_bound_summary.csv": "30be32e85f1d550c32a2fd08edeece179ea252c177d82cbe11e6fe10a7fcaebc",
+    "selection.json": "f5d63b6c857802e7c24981b2878665b2db45a3140011adbd7ce8c48fd33bb34d",
+    "service.png": "34419d031ff368bd5b83a1b619a05d2213871961f5d510fc99abc1bd101f5fcf",
+    "service.svg": "96aa61a24d16ad6cdae26368af0fe223620f15bd79900387cb52d5cede1ed8a2",
+    "test_channels.csv": "43257fecf5da096e55a501296fc67735c02a5fc05b2a380e624eb704ca68d30f",
+    "test_episodes.csv": "2cc22142aca045d74980f7888a170d70838f76af76b592943c26000d7bed01e9",
+    "test_summary.csv": "3585045a894b650d6a8f345f1f489244fd61106d0cd6471c555b9b82bd1cac1a",
+    "test_verification.json": "fe5fa327ad1d7e1c5c050311e493f604afb37084dfcdf27917ba3ca6e5a5d2b9",
+    "validation_cells.csv": "649aa44658d602c2a38d30daf46f921d5a9c913a7b63873bb97d13286c27581b",
+    "validation_episodes.csv": "bbf8f6fe2fc36388feed8a0a99b4eec908ebf21ccbc2ff41edd8f75c31a65b15",
+    "validation_statistics.csv": "0adf1388dec1d5efb7bd24ac7174f03bb6b0af5340921fdb5858dcf3f8ddf053"
+  }
+}

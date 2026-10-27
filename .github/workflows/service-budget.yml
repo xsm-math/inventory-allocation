@@ -16,6 +16,7 @@ jobs:
       - run: python -m unittest discover -s tests -v
       - run: python -m supplychain.service_budget --stage validate --output results/service-budget-ci
       - run: python -m supplychain.service_budget --stage test --output results/service-budget-ci
+      - run: python scripts/service_budget_diagnostics.py --run-dir results/service-budget-ci
       - run: python -m supplychain.service_budget --stage report --output results/service-budget-ci
       - uses: actions/upload-artifact@v4
         with:

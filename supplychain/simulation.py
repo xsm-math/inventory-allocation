@@ -51,7 +51,7 @@ def execute(net,state,action,day,demand,supply_factor=1.):
 def run_episode(net,seed=101,days=20,regime='normal',policy='mpc',horizon=5,time_limit=2.,capture=False,baseline_horizon=None,policy_options=None):
     if days<1 or horizon<1:raise ValueError('Positive days and horizon required')
     options={} if policy_options is None else dict(policy_options)
-    if set(options)-{'forecast_buffer','review_days','allocation_rule','service_goal','service_tolerance'}:
+    if set(options)-{'forecast_buffer','review_days','allocation_rule','service_goal','service_tolerance','service_precision'}:
         raise ValueError('Unknown policy options')
     training,actual=synthetic_history(net,seed,days,regime)
     state=State.initial(net);history=training.copy()
@@ -95,7 +95,8 @@ def run_episode(net,seed=101,days=20,regime='normal',policy='mpc',horizon=5,time
              'demand_sha256':hashlib.sha256(actual.tobytes()).hexdigest()}
     for k in ['revenue','procurement','shipping','dispatch','holding','shortage_penalty','express_units','ground_units','active_dispatches']:
         summary[k]=sum(r[k] for r in records)
-    summary['service_primary_unproven_days']=sum(r.get('service_primary_status',-1)!=0 for r in records) if policy=='mpc_service' else 0
+    summary['service_primary_unproven_days']=sum(not r.get('service_primary_exact',False) for r in records) if policy=='mpc_service' else 0
+    summary['service_primary_precision_unmet_days']=sum(not r.get('service_primary_precision_met',False) for r in records) if policy=='mpc_service' else 0
     summary['service_refinement_fallback_days']=sum(r.get('service_refinement_fallback',False) for r in records)
     if baseline_horizon is not None:summary['baseline_horizon']=baseline_horizon
     channels=[{'channel':net.raw['channels'][c],'sold':int(channel_sold[c].sum()),'demand':int(channel_demand[c].sum()),'fill_rate':float(channel_sold[c].sum()/max(channel_demand[c].sum(),1))} for c in range(net.C)]

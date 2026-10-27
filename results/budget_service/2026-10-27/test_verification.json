@@ -1,0 +1,11 @@
+{
+  "checks": "passed",
+  "episodes": 144,
+  "ledger_max_error": 5.820766091346741e-11,
+  "selection_sha256": "f5d63b6c857802e7c24981b2878665b2db45a3140011adbd7ce8c48fd33bb34d",
+  "files": {
+    "test_episodes.csv": "2cc22142aca045d74980f7888a170d70838f76af76b592943c26000d7bed01e9",
+    "test_channels.csv": "43257fecf5da096e55a501296fc67735c02a5fc05b2a380e624eb704ca68d30f",
+    "representative_daily.csv": "68767db521d9a37e8d3fcce3c98eb1e6da0212eb4862c1772f3c8395711aaee5"
+  }
+}

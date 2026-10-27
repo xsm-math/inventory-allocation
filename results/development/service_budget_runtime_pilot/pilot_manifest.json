@@ -1,0 +1,27 @@
+{
+  "status": "incomplete_development_runtime_pilot",
+  "source_commit": "a05f122",
+  "completed_policy_episodes": 45,
+  "fingerprint": {
+    "protocol": "443c9095d6a01cf1669b5702e839d0d22ce2fe1cad6cb47aecd001a241027c91",
+    "sources": {
+      "supplychain/__init__.py": "a44189822d7939c1134a4ba252fb5866b2938a0b09baf306b093e6d857ddf8a6",
+      "supplychain/__main__.py": "7a676762c27e5c767c5bab0693335d6d5420a544ef01dc3d2f1bcd0645cb98cd",
+      "supplychain/benchmark.py": "1cc91baff897e08f5ddfd0de5c2feb1cd3499ca0b245a92df7d041cd9d04155b",
+      "supplychain/forecast.py": "4f4163a4d184c7be793e5e580eee31d80939787097e3ac65eaede5a9d7c13320",
+      "supplychain/frontier.py": "6fce42cfa9b70c29a3736596d0d355d3214fd970533caf3e4ce9d15392a7cff4",
+      "supplychain/network.py": "84317f0e531b3ac91751dbf53a562b68b38e4d7aba0f8e565c454a683beed30b",
+      "supplychain/planner.py": "631996c0a624f1f0f4907fd6e713269a15ee21ba656cf2c261284de971e682b7",
+      "supplychain/policies.py": "0fb0f8c1578ab0e9646dce13db12558ff420ed9d83908dea566dd71334bd8bff",
+      "supplychain/research.py": "49536c523313bdaf68e9371dd86dc1d3cc96494639049de6e94bf1b3eaaeb137",
+      "supplychain/scaling.py": "70592f02d80f181e69817d71d8b96ef403253b335fdadfddac32b5a15d3ae426",
+      "supplychain/service_budget.py": "fa3b82cf7cbebb9cc449eba0c163fabd502eca1bea450d82f412b57bd96aff34",
+      "supplychain/simulation.py": "745e9ef4d6ee06e09201ac88dc67f3132025cdbeca09d083b9ff1676df2bd938"
+    },
+    "network": "e09299772c61cf6641aab0293f5338f8713e98961806e25f71b8206b1969ea93",
+    "prior_protocol": "c7a47e2a789ac793dbf35ad8b682ed31b64f941aed2fbc76e2ab3df1413f6c13",
+    "bound_script": "adc63af8c6e7de5704882f0104b5246a3f85b42e6b37b4e91e7e84551274ebe1"
+  },
+  "reason": "Investigate primary optimality precision and refinement feasibility before any test execution",
+  "test_paths_inspected": false
+}

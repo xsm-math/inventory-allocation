@@ -40,11 +40,12 @@ def fingerprint(p):
 
 
 def validate_protocol(p):
-    for key in ['development_seeds','validation_seeds','test_seeds']:
+    partitions=['development_seeds','runtime_development_seeds','validation_seeds','test_seeds']
+    for key in partitions:
         s=p[key]
         if not s or any(type(x) is not int or x<0 for x in s) or len(s)!=len(set(s)):
             raise ValueError('Invalid seed partition')
-    for a,b in itertools.combinations(['development_seeds','validation_seeds','test_seeds'],2):
+    for a,b in itertools.combinations(partitions,2):
         if set(p[a]) & set(p[b]):raise ValueError('Overlapping seed partitions')
     prior=json.loads((ROOT/'configs/service_frontier.json').read_text(encoding='utf-8'))
     known=set(prior['development_seeds']+prior['validation_seeds']+prior['test_seeds'])
@@ -59,7 +60,7 @@ def validate_protocol(p):
     if (isinstance(p['time_limit'],bool) or not np.isfinite(p['time_limit']) or p['time_limit']<=0
             or type(p['stock_review_days']) is not int or p['stock_review_days']<1):
         raise ValueError('Invalid solver/review setting')
-    for key,low,high in [('forecast_buffer',0,2),('service_goal',0,1),('planning_service_penalty',0,np.inf)]:
+    for key,low,high in [('forecast_buffer',0,2),('service_goal',0,1),('service_precision',0,1),('planning_service_penalty',0,np.inf)]:
         x=p[key]
         if isinstance(x,bool) or not np.isfinite(x) or not low<=x<=high:raise ValueError('Invalid planning control')
     ts=p['service_tolerances']
@@ -83,7 +84,8 @@ def candidates(p):
                'options':{'forecast_buffer':p['forecast_buffer']},
                'network_overrides':{'service_slack_penalty':p['planning_service_penalty']}}]
     return controls+[{'id':f'service-d{t:g}','family':'service_milp','policy':'mpc_service',
-                      'options':{'forecast_buffer':p['forecast_buffer'],'service_goal':p['service_goal'],'service_tolerance':t},
+                      'options':{'forecast_buffer':p['forecast_buffer'],'service_goal':p['service_goal'],
+                                 'service_tolerance':t,'service_precision':p['service_precision']},
                       'network_overrides':{'service_slack_penalty':p['planning_service_penalty']}}
                      for t in p['service_tolerances']]
 
@@ -198,7 +200,7 @@ def summarize(df,p):
         for profile in p['report_profiles']:
             row[profile['name']+'_mean_pass']=bool(row['fill_rate']>=profile['fill'] and row['worst_channel_fill']>=profile['worst'])
             row[profile['name']+'_episode_violation_rate']=float(((g.fill_rate<profile['fill'])|(g.worst_channel_fill<profile['worst'])).mean())
-        for key in ['fallback_days','limit_days','service_primary_unproven_days','service_refinement_fallback_days']:
+        for key in ['fallback_days','limit_days','service_primary_unproven_days','service_primary_precision_unmet_days','service_refinement_fallback_days']:
             row[key]=int(g[key].sum())
         row['mean_solve_seconds']=float(g.mean_solve_seconds.mean())
         result.append(row)
@@ -300,6 +302,7 @@ def report_stage(p,out):
         '## Optimistic ex-post resource bounds', '', '```',bound_summary.to_string(index=False),'```','',
         'These bounds relax distribution timing and capacities. They see demand after choices are frozen and are never inputs to a controller. Passing a bound is not proof of service feasibility.',
         'The service policy prioritizes forecast-conditioned cumulative channel service; it does not guarantee realized service. If primary optimality is unproven, the refinement cap uses its feasible incumbent, not the unknown optimum.',
+        'Primary service precision is 0.001 absolute deficit units (0.1 percentage point). The precision certificate and exact optimality are reported separately; solver success at this tolerance is not exact optimality.',
         'The first service incumbent is retained if economic refinement has no valid solution; all such fallbacks are counted. If the primary phase fails, the existing feasible stock fallback applies.',
         'Further limits: one network, small fixed synthetic samples, uncensored demand, finite horizon/salvage, tuned tolerance conditional on validation, no multiple-comparison correction or production evidence.']
     (out/'REPORT.md').write_text('\n'.join(lines)+'\n',encoding='utf-8',newline='\n')

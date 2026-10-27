@@ -64,7 +64,7 @@ def base_stock(net,state,forecast,day,supply_factor=1.,review_days=2,allocation_
 
 def decide(net,state,history,day,remaining,policy,horizon=5,supply_factor=1.,time_limit=2.,baseline_horizon=None,
            forecast_buffer=None,review_days=2,allocation_rule='coverage',service_history=None,
-           service_goal=.9,service_tolerance=0.):
+           service_goal=.9,service_tolerance=0.,service_precision=.001):
     if policy not in POLICIES:raise ValueError('Unknown policy')
     if baseline_horizon is not None and (isinstance(baseline_horizon,(bool,np.bool_))
             or not isinstance(baseline_horizon,(int,np.integer)) or baseline_horizon<1):
@@ -82,7 +82,7 @@ def decide(net,state,history,day,remaining,policy,horizon=5,supply_factor=1.,tim
     if policy=='base_stock' and baseline_horizon is not None:H=min(remaining,baseline_horizon)
     buffer=(.4 if policy=='mpc_buffered' else 0.) if forecast_buffer is None else forecast_buffer
     demand=predict(history,H,buffer=buffer)
-    if policy!='mpc_service' and (service_history is not None or service_goal!=.9 or service_tolerance!=0.):
+    if policy!='mpc_service' and (service_history is not None or service_goal!=.9 or service_tolerance!=0. or service_precision!=.001):
         raise ValueError('Observed service controls apply to mpc_service only')
     if policy=='base_stock':
         if review_days==2 and allocation_rule=='coverage':
@@ -92,7 +92,7 @@ def decide(net,state,history,day,remaining,policy,horizon=5,supply_factor=1.,tim
         raise ValueError('Service policy requires observed pre-decision demand and sales')
     try:
         if policy=='mpc_service':
-            control={**service_history,'goal':service_goal,'tolerance':service_tolerance}
+            control={**service_history,'goal':service_goal,'tolerance':service_tolerance,'precision':service_precision}
             return plan(net,state,demand,day,supply_factor,time_limit,service_control=control)
         if policy=='mpc_safety':
             reserve=safety_stock(history,net.supplier_lead,net.raw.get('safety_quantile',.9))

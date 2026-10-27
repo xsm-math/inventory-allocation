@@ -8,12 +8,12 @@
 
 | Project Summary | Rolling replenishment and allocation in a multi-warehouse, multi-channel, multi-SKU network; the flagship optimization study. |
 |---|---|
-| Research Question | How do forecast uncertainty and shared capacities change the economic value and service of rolling inventory decisions? |
-| Methods | MILP, past-only demand forecasts, buffered/safety-stock policies, paired Monte Carlo evaluation and one-factor sensitivity. |
-| Key Results | Across 144 synthetic episodes, buffered MILP improves mean economic value by **3.06% / 10.31% / 8.33%** in normal / surge / supply-shock regimes; aggregate fill rates remain below base stock. |
-| Evidence | [Paired comparisons](results/network/paired_comparisons.csv), [aggregate service](results/network/aggregate.csv), [experiment provenance](results/network/metadata.json). These are simulated outcomes, not realized operational savings. |
+| Research Question | How do procurement resources and service priorities change economic value and channel shortages in rolling inventory decisions? |
+| Methods | MILP, cumulative-service priorities, past-only forecasts, frozen validation/test protocols and paired policy-by-budget experiments. |
+| Key Results | In the latest 42-day synthetic tests, service-priority MILP raises mean worst-channel fill by **15.03 / 15.66 percentage points** in surge / supply shock versus economic MILP at current budgets, with **4.29% / 4.85% lower economic value**. The full service mandate remains unmet. |
+| Evidence | [Latest paired effects](results/budget_service/2026-10-27/paired_effects.csv), [test service](results/budget_service/2026-10-27/test_summary.csv), [findings and solver limits](docs/service_budget_results.md). Eight held-out seeds per regime; these are simulated outcomes, not operational savings. |
 
-![Economic gain and service trade-off](assets/portfolio/summary.svg)
+![Held-out service under policy and budget changes](results/budget_service/2026-10-27/service.png)
 
 ## Abstract
 
@@ -21,11 +21,13 @@
 
 **Service-target extension (2026-10-27):** [Protocol](docs/service_frontier_protocol.md) · [Results and resource bounds](docs/service_frontier_results.md). Validation-frozen comparisons strengthen the stock baseline but do not establish a general MILP advantage at comparable service. The complete 38-test suite passes.
 
-This project studies joint replenishment and allocation in a multi-warehouse, multi-store-channel, multi-SKU inventory network. A rolling mixed-integer linear program coordinates procurement, delayed ground shipments, and same-day express shipments under shared capacities and fixed dispatch charges. Four policies are evaluated using paired Monte Carlo trajectories: a base-stock heuristic, point-forecast MILP, buffered-forecast MILP, and explicit safety-stock MILP. The study separates planning objectives from realized accounting, compares service and economic value, and examines sensitivity to service targets, shortage costs, holding costs, and transport capacity. All data are synthetic; the contribution is a reproducible computational experiment and validated implementation, not a new optimization algorithm or evidence of operational savings.
+**Service-priority/budget extension (current):** [Formulation and protocol](docs/service_budget_protocol.md) · [Full results](docs/service_budget_results.md). Adds observed cumulative service, two-stage optimization and a fresh 120-validation/144-test policy-by-budget study. All 53 tests pass on Python 3.12 and 3.14; economic-refinement time limits remain a material limitation.
+
+This project studies joint replenishment and allocation in a multi-warehouse, multi-store-channel, multi-SKU inventory network. A rolling mixed-integer linear program coordinates procurement, delayed ground shipments, and same-day express shipments under shared capacities and fixed dispatch charges. The original paired Monte Carlo study compares base stock, point-forecast MILP, buffered MILP and safety-stock MILP. Validation-frozen extensions strengthen the heuristic controls, introduce cumulative-service priorities, and cross policy changes with procurement budgets. The work separates planning objectives from realized accounting and retains negative and conditional findings. All data are synthetic; the contribution is a reproducible computational experiment and validated implementation, not a new optimization algorithm or evidence of operational savings.
 
 ## Problem Definition
 
-Three warehouses supply five retail channels/store groups with two SKUs over 21 daily decisions. Ground shipments take one or two days; express takes zero days; procurement takes two days. Orders are placed before the day's demand is revealed. Unserved demand is lost. The decision problem is to allocate limited inventory and transport capacity while balancing heterogeneous sales margins, shortage penalties, freight, fixed dispatch charges, and holding costs.
+Three warehouses supply five retail channels/store groups with two SKUs. The original reference study has 21 daily decisions; the validation-frozen extensions have 42. Ground shipments take one or two days; express takes zero days; procurement takes two days. Orders are placed before the day's demand is revealed. Unserved demand is lost. The decision problem is to allocate limited inventory and transport capacity while balancing heterogeneous sales margins, shortage penalties, freight, fixed dispatch charges, and holding costs.
 
 All policies receive identical uncensored historical demand, starting inventory, costs, and today's supply restrictions. Future demand and disruption recovery dates are withheld. See [data provenance](data/README.md) and the [event sequence and model](docs/network_model.md).
 
@@ -39,9 +41,16 @@ Constraints enforce warehouse and channel inventory balance with pipeline arriva
 
 The safety-stock variant adds $I^C_{tcp}+b_{tcp}\ge a_t SS_{cp}$, with $SS_{cp}=\lceil z_{0.9}\widehat\sigma_{cp}\sqrt{L^q}\rceil$ estimated from past-only forecast residuals. The taper releases reserve near the planning boundary. Slack is penalized to retain feasibility under shortages. This normal approximation is a policy heuristic, not a chance constraint or guaranteed 90% fill rate.
 
+The service-priority extension uses observed cumulative demand/sales and forecast-
+horizon sales to minimize the maximum positive projected channel service deficit.
+It then minimizes the economic plan within a validation-selected tolerance of the
+checked service incumbent. [The formulation](docs/service_budget_protocol.md)
+distinguishes a 0.1-percentage-point model precision certificate, exact optimality,
+economic refinement and realized service.
+
 ## Data
 
-All demand is synthetic. The reference network has three warehouses, five retail channels, two SKUs, 42 historical days and 21 daily operating decisions. Costs and capacities are illustrative CNY parameters in [the configuration](configs/network.json). [Data provenance](data/README.md) specifies the process and information available to every policy.
+All demand is synthetic. The reference network has three warehouses, five retail channels, two SKUs and 42 historical days; the original study uses 21 operating decisions and the extensions use 42. Costs and capacities are illustrative CNY parameters in [the configuration](configs/network.json). [Data provenance](data/README.md) specifies the process and information available to every policy.
 
 ## Methodology
 
@@ -131,6 +140,35 @@ python -m supplychain.frontier --stage report --output results/service-frontier-
 
 The final report command includes the separate bound artifacts in the run manifest.
 Use a fresh output directory; the test stage preserves frozen evidence.
+
+### Cumulative service priority and budget effects
+
+The latest extension first minimizes the largest projected cumulative channel
+service deficit, then optimizes the economic plan within a declared service
+tolerance. Only previously observed demand/sales enter the service state. Primary
+precision is 0.1 percentage point; this is separate from exact optimality and does
+not guarantee realized service. Fresh validation chooses one global 2-percentage-
+point tolerance before eight new test seeds per regime are evaluated at current
+and +10% procurement budgets.
+
+At current budgets, worst-channel fill improves by 15.03 / 15.66 percentage points
+in surge / supply shock versus economic MILP, while economic value declines by
+4.29% / 4.85%. Budget +10% raises service-policy value by 13,052 / 7,463 illustrative
+CNY in those regimes after actual procurement costs, excluding extra financing fees.
+The larger-budget stock controller meets the mean 85%/75% service target on the
+test sample; the service-priority controller does not meet it in both stress regimes.
+There is no general dominance or minimum-cost-of-fairness claim. [Full findings](docs/service_budget_results.md)
+retain all paired intervals, target violations, resource bounds and solver gaps.
+
+```bash
+python -m supplychain.service_budget --stage run --output results/service-budget-new
+python scripts/service_budget_diagnostics.py --run-dir results/service-budget-new
+python -m supplychain.service_budget --stage report --output results/service-budget-new
+```
+
+The manual `Inventory service priority and budget study` workflow runs the same
+experiment. The incomplete runtime pilot and its precision repair are preserved
+as development evidence, with fresh validation paths for the final study.
 
 ![Economic value and service](results/network/policy_comparison.svg)
 ![One-factor sensitivity](results/research/sensitivity.svg)

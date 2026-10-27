@@ -100,6 +100,20 @@ class ServicePolicyTests(unittest.TestCase):
         self.assertEqual(result['summary']['service_primary_unproven_days'],3)
         self.assertEqual(result['summary']['limit_days'],3)
 
+    def test_service_precision_certificate_is_distinct_from_exact_optimality(self):
+        original=Model.solve;calls=[]
+        def approximate(model,*args):
+            result,matrix=original(model,*args);calls.append(args)
+            if len(calls)==1:result.mip_dual_bound=result.fun-.0005
+            return result,matrix
+        n=two_channels()
+        with patch.object(Model,'solve',approximate):
+            action=plan(n,State.initial(n),np.ones((1,2,1),int),service_control=control())
+        self.assertEqual(calls[0][2],.001)
+        self.assertTrue(action.diagnostics['service_primary_precision_met'])
+        self.assertFalse(action.diagnostics['service_primary_exact'])
+        self.assertAlmostEqual(action.diagnostics['service_primary_absolute_gap'],.0005)
+
     def test_simulator_passes_only_pre_decision_prefix_and_is_causal(self):
         n=tiny();history=np.full((42,1,1),2)
         futures=[np.full((6,1,1),2),np.array([2,2,2,40,40,40]).reshape(6,1,1)]
@@ -120,7 +134,7 @@ class ServicePolicyTests(unittest.TestCase):
         n=tiny();d=np.full((1,1,1),2)
         good=dict(demand=[2.],sold=[1.],goal=.9,tolerance=.02)
         for changes in [dict(demand=[np.nan]),dict(sold=[3.]),dict(sold=[-1.]),
-                        dict(demand=[1.,2.]),dict(goal=1.1),dict(tolerance=-.1),dict(goal=True)]:
+                        dict(demand=[1.,2.]),dict(goal=1.1),dict(tolerance=-.1),dict(goal=True),dict(precision=-.001)]:
             with self.assertRaises(ValueError):
                 plan(n,State.initial(n),d,service_control={**good,**changes})
         for policy in ['base_stock','mpc']:
