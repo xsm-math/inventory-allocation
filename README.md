@@ -1,6 +1,6 @@
 # Inventory Allocation Optimization
 
-**Operations Research & Decision Optimization** · Quantitative Decision Science · Selected Project 01 · Flagship
+**Operations Research & Decision Optimization** · Inventory and service decisions
 
 ![Python: Research](https://img.shields.io/badge/Python-Research-236d91?style=flat-square) ![Focus: MILP](https://img.shields.io/badge/Focus-MILP-236d91?style=flat-square) ![Evidence: Reproducible](https://img.shields.io/badge/Evidence-Reproducible-258a75?style=flat-square)
 
@@ -8,12 +8,32 @@
 
 | Project Summary | Rolling replenishment and allocation in a multi-warehouse, multi-channel, multi-SKU network; the flagship optimization study. |
 |---|---|
-| Research Question | How do procurement resources and service priorities change economic value and channel shortages in rolling inventory decisions? |
-| Methods | MILP, cumulative-service priorities, past-only forecasts, frozen validation/test protocols and paired policy-by-budget experiments. |
-| Key Results | In the latest 42-day synthetic tests, service-priority MILP raises mean worst-channel fill by **15.03 / 15.66 percentage points** in surge / supply shock versus economic MILP at current budgets, with **4.29% / 4.85% lower economic value**. The full service mandate remains unmet. |
-| Evidence | [Latest paired effects](results/budget_service/2026-10-27/paired_effects.csv), [test service](results/budget_service/2026-10-27/test_summary.csv), [findings and solver limits](docs/service_budget_results.md). Eight held-out seeds per regime; these are simulated outcomes, not operational savings. |
+| Research Question | Which controller and procurement resources are justified by a service mandate and budget-access cost? |
+| Methods | Rolling MILP, cumulative-service priorities, checked native refinement, validation-frozen decisions and optimistic resource LP bounds. |
+| Key Results | With budget +10%, frozen choices change from economic MILP (80%/60% service means) to service-priority MILP (80%/75%) to simple stock (85%/75%). All three confirm on held-out means. Current-budget surge fill is bounded above by 86.54%; strict 90%/80% needs at least 7.13% more budget in a relaxation, without an achievable-service guarantee. |
+| Evidence | [Decision conclusions](docs/DECISION_CONCLUSIONS.md), [frozen held-out assessment](results/decision_study/2026-10-27/decision_assessment.csv), [all outcomes](results/decision_study/2026-10-27/test_summary.csv). 108 validation / 216 test synthetic episodes; 12 new test seeds per regime. No general MILP dominance or real savings claim. |
 
-![Held-out service under policy and budget changes](results/budget_service/2026-10-27/service.png)
+![Held-out service under policy and budget changes](results/decision_study/2026-10-27/service.png)
+
+## Core decisions
+
+Service thresholds below are means required in **every** declared regime. Choices
+are frozen on validation, use budget +10%, and confirm on 12 new test seeds per
+regime at hypothetical facility fees of 0 / 100 / 250 / 500 CNY/day.
+
+| Aggregate / worst-channel mandate | Supported choice | Modeling implication |
+|---|---|---|
+| 80% / 60% | Economic MILP | Prioritize value when channel protection is less binding. |
+| 80% / 75% | Service-priority MILP | Protect weak channels; economic MILP misses this gate. |
+| 85% / 75% | Stock, review 4 / buffer 0 | The simple controller is the only qualified tested option. |
+| 90% / 80% | No qualified option | Current resources exclude the surge target even under an optimistic relaxation; +10% budget still needs a better executable policy. |
+
+The validation switch fee of 741 CNY/day becomes an estimated budget value of
+655 [599, 707] on held-out paths for the frozen base-stock versus expanded-budget
+economic-MILP pair. This is not a stable operational cutoff. Mean confirmation
+does not certify episode reliability or an SLA. [Full conclusions](docs/DECISION_CONCLUSIONS.md)
+distinguish resource infeasibility, candidate inadequacy, observed trade-offs and
+solver precision. All data and fees are synthetic or hypothetical.
 
 ## Abstract
 
@@ -21,7 +41,9 @@
 
 **Service-target extension (2026-10-27):** [Protocol](docs/service_frontier_protocol.md) · [Results and resource bounds](docs/service_frontier_results.md). Validation-frozen comparisons strengthen the stock baseline but do not establish a general MILP advantage at comparable service. The complete 38-test suite passes.
 
-**Service-priority/budget extension (current):** [Formulation and protocol](docs/service_budget_protocol.md) · [Full results](docs/service_budget_results.md). Adds observed cumulative service, two-stage optimization and a fresh 120-validation/144-test policy-by-budget study. All 53 tests pass on Python 3.12 and 3.14; economic-refinement time limits remain a material limitation.
+**Service-priority/budget extension (earlier study):** [Formulation and protocol](docs/service_budget_protocol.md) · [Full results](docs/service_budget_results.md). Adds observed cumulative service, two-stage optimization and a fresh 120-validation/144-test policy-by-budget study. Its 53-test suite passes on Python 3.12 and 3.14; economic-refinement time limits remain a material limitation of that study.
+
+**Frozen decision extension (current):** [Decision conclusions](docs/DECISION_CONCLUSIONS.md) · [Protocol](docs/decision_study_protocol.md). Adds checked native refinement, service/solver gates, budget-access fees and explicit rejection. Completes 108 validation / 216 held-out episodes with all daily records; 72 tests pass on Python 3.12 and 3.14. Conditional controller choices replace a universal algorithm ranking.
 
 This project studies joint replenishment and allocation in a multi-warehouse, multi-store-channel, multi-SKU inventory network. A rolling mixed-integer linear program coordinates procurement, delayed ground shipments, and same-day express shipments under shared capacities and fixed dispatch charges. The original paired Monte Carlo study compares base stock, point-forecast MILP, buffered MILP and safety-stock MILP. Validation-frozen extensions strengthen the heuristic controls, introduce cumulative-service priorities, and cross policy changes with procurement budgets. The work separates planning objectives from realized accounting and retains negative and conditional findings. All data are synthetic; the contribution is a reproducible computational experiment and validated implementation, not a new optimization algorithm or evidence of operational savings.
 
@@ -67,13 +89,13 @@ All demand is synthetic. The reference network has three warehouses, five retail
 
 The controller is deterministic forecast-based optimization. Monte Carlo is used for evaluation, not multistage stochastic programming. Planning service/reserve penalties are regularizers excluded from the realized economic ledger. Realized shortage penalties are included.
 
-## Experimental Design
+## Original benchmark design
 
 The main study uses 12 seeds × three regimes × four policies = 144 episodes. Regimes are normal demand, a 45% demand surge, and a supplier-capacity/budget disruption. A matched horizon ablation retains the original 3/5/7-day study. The sensitivity study uses six separate seeds and three levels for each of four factors, comparing base stock and safety-stock MILP. Reference cells are reused; there are 108 unique sensitivity episodes. No parameter search or post-hoc best-policy selection is performed.
 
 The solver receives two seconds per decision and a 2% relative MIP-gap tolerance. These settings apply to the planning model, not realized policy optimality. See the [experimental protocol](docs/network_experiments.md) for accounting, pairing, constraints, and statistical limitations.
 
-## Results
+## Original benchmark results and extensions
 
 <!-- RESULTS:START -->
 | Regime | Policy | Economic value (CNY) | Fill rate | Worst-channel fill |
@@ -143,7 +165,7 @@ Use a fresh output directory; the test stage preserves frozen evidence.
 
 ### Cumulative service priority and budget effects
 
-The latest extension first minimizes the largest projected cumulative channel
+This earlier extension first minimizes the largest projected cumulative channel
 service deficit, then optimizes the economic plan within a declared service
 tolerance. Only previously observed demand/sales enter the service state. Primary
 precision is 0.1 percentage point; this is separate from exact optimality and does

@@ -1,0 +1,10 @@
+{
+  "episodes": 216,
+  "ledger_max_error": 5.820766091346741e-11,
+  "selection_sha256": "51049ada3c0c1d7ad5a20f4376bc87f11ef5aeea1bd13fd272b86f34c2dcccc1",
+  "files": {
+    "test_episodes.csv": "270fc916b27cc399e251060c24da4a9022ac33604dec60d331fdb984715d929a",
+    "test_daily.csv": "cedd73eadd1d26010a98d02c0f686bb66e2ea7426a441bfa676b011d2ec97a7c",
+    "test_channels.csv": "27744b1a6006411d8002fa125d1ee21b367a9619a93c7a3476dacaf4e79a5137"
+  }
+}

@@ -13,3 +13,4 @@ pytz==2026.5
 scipy==1.18.1
 six==1.17.0
 tzdata==2026.5
+highspy==1.15.1

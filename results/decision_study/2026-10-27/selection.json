@@ -1,0 +1,527 @@
+{
+  "protocol": {
+    "experiment": "frozen-decision-v1",
+    "days": 42,
+    "horizon": 5,
+    "time_limit": 4.0,
+    "economic_precision": 25.0,
+    "workers": 6,
+    "bootstrap_samples": 2000,
+    "regimes": [
+      "normal",
+      "surge",
+      "supply_shock"
+    ],
+    "validation_seeds": [
+      50001,
+      50002,
+      50003,
+      50004,
+      50005,
+      50006
+    ],
+    "test_seeds": [
+      60001,
+      60002,
+      60003,
+      60004,
+      60005,
+      60006,
+      60007,
+      60008,
+      60009,
+      60010,
+      60011,
+      60012
+    ],
+    "resources": [
+      {
+        "name": "base",
+        "budget_multiplier": 1.0
+      },
+      {
+        "name": "budget_plus_10pct",
+        "budget_multiplier": 1.1
+      }
+    ],
+    "economic_certified_fraction": 0.98,
+    "primary_certified_fraction": 0.99,
+    "fees_per_day": [
+      0,
+      100,
+      250,
+      500
+    ],
+    "mandates": [
+      {
+        "name": "value_led",
+        "fill": 0.8,
+        "worst": 0.6
+      },
+      {
+        "name": "channel_protection",
+        "fill": 0.8,
+        "worst": 0.75
+      },
+      {
+        "name": "broad_service",
+        "fill": 0.85,
+        "worst": 0.75
+      },
+      {
+        "name": "strict",
+        "fill": 0.9,
+        "worst": 0.8
+      }
+    ]
+  },
+  "fingerprint": {
+    "protocol": "4bf8953a8451abdb53fd1b7d27ac3acee0ab68383e0571d05d6a5d6c1e6c4eda",
+    "sources": {
+      "supplychain/__init__.py": "a44189822d7939c1134a4ba252fb5866b2938a0b09baf306b093e6d857ddf8a6",
+      "supplychain/__main__.py": "7a676762c27e5c767c5bab0693335d6d5420a544ef01dc3d2f1bcd0645cb98cd",
+      "supplychain/benchmark.py": "1cc91baff897e08f5ddfd0de5c2feb1cd3499ca0b245a92df7d041cd9d04155b",
+      "supplychain/decision_study.py": "cae7d38197006d35fbe98fc134632e5523e855bc1de17ed1cfdac4d8c705bacd",
+      "supplychain/forecast.py": "4f4163a4d184c7be793e5e580eee31d80939787097e3ac65eaede5a9d7c13320",
+      "supplychain/frontier.py": "6fce42cfa9b70c29a3736596d0d355d3214fd970533caf3e4ce9d15392a7cff4",
+      "supplychain/native_solver.py": "ad9acd2d950b9f60868ef12e7b9d77a602224c306b494b2908a80e4e6138ed0a",
+      "supplychain/network.py": "84317f0e531b3ac91751dbf53a562b68b38e4d7aba0f8e565c454a683beed30b",
+      "supplychain/planner.py": "08fdea53427ccde0e1c2cc778a37a0559b30f5db8d60bad61dd38ffcc7944bd3",
+      "supplychain/policies.py": "1d568b324b37c25ee452034e2aba30a819e6ed2d650d4201cd6210455c2eca81",
+      "supplychain/research.py": "49536c523313bdaf68e9371dd86dc1d3cc96494639049de6e94bf1b3eaaeb137",
+      "supplychain/scaling.py": "70592f02d80f181e69817d71d8b96ef403253b335fdadfddac32b5a15d3ae426",
+      "supplychain/service_budget.py": "65ea69f4c88f0329de5a80349dbb86d962a765471231cd1c44a0e17b9c5852d9",
+      "supplychain/simulation.py": "897f61125561978a110f2bcb176cd8cb76a75b440db398c550b02a24973a0a09"
+    },
+    "network": "e09299772c61cf6641aab0293f5338f8713e98961806e25f71b8206b1969ea93",
+    "prior_protocol": "c7a47e2a789ac793dbf35ad8b682ed31b64f941aed2fbc76e2ab3df1413f6c13",
+    "bound_script": "adc63af8c6e7de5704882f0104b5246a3f85b42e6b37b4e91e7e84551274ebe1",
+    "requirements": "5de57366a7ce6d4984fe9852e8949a243b460bd33bd35eed950207524412e23e",
+    "native_solver_version": "1.15.1"
+  },
+  "candidates": [
+    {
+      "id": "stock",
+      "family": "stock",
+      "policy": "base_stock",
+      "options": {
+        "review_days": 4,
+        "forecast_buffer": 0.0
+      },
+      "network_overrides": {}
+    },
+    {
+      "id": "economic_milp",
+      "family": "economic_milp",
+      "policy": "mpc",
+      "options": {
+        "forecast_buffer": 0.8,
+        "solver_backend": "highs",
+        "economic_precision": 25.0
+      },
+      "network_overrides": {
+        "service_slack_penalty": 32.0
+      }
+    },
+    {
+      "id": "service_milp",
+      "family": "service_milp",
+      "policy": "mpc_service",
+      "options": {
+        "forecast_buffer": 0.8,
+        "solver_backend": "highs",
+        "economic_precision": 25.0,
+        "service_goal": 0.9,
+        "service_tolerance": 0.02,
+        "service_precision": 0.001
+      },
+      "network_overrides": {
+        "service_slack_penalty": 32.0
+      }
+    }
+  ],
+  "frozen_at": "2026-10-27T06:07:33.381201+00:00",
+  "decisions": [
+    {
+      "mandate": "value_led",
+      "fee_per_day": 0,
+      "status": "frozen",
+      "selected": {
+        "candidate": "economic_milp",
+        "resource": "budget_plus_10pct",
+        "eligible": true,
+        "service_eligible": true,
+        "quality_eligible": true,
+        "worst_regime_value": 156968.63333333333,
+        "min_fill": 0.8371489799104629,
+        "min_worst": 0.6580798864502005,
+        "economic_certified_fraction": 1.0,
+        "primary_certified_fraction": 1.0,
+        "fee_per_day": 0,
+        "net_worst_regime_value": 156968.63333333333
+      },
+      "runner_up": {
+        "candidate": "service_milp",
+        "resource": "budget_plus_10pct",
+        "eligible": true,
+        "service_eligible": true,
+        "quality_eligible": true,
+        "worst_regime_value": 152364.26666666666,
+        "min_fill": 0.8352109453574715,
+        "min_worst": 0.8049108417335851,
+        "economic_certified_fraction": 0.9920634920634921,
+        "primary_certified_fraction": 1.0,
+        "fee_per_day": 0,
+        "net_worst_regime_value": 152364.26666666666
+      }
+    },
+    {
+      "mandate": "value_led",
+      "fee_per_day": 100,
+      "status": "frozen",
+      "selected": {
+        "candidate": "economic_milp",
+        "resource": "budget_plus_10pct",
+        "eligible": true,
+        "service_eligible": true,
+        "quality_eligible": true,
+        "worst_regime_value": 156968.63333333333,
+        "min_fill": 0.8371489799104629,
+        "min_worst": 0.6580798864502005,
+        "economic_certified_fraction": 1.0,
+        "primary_certified_fraction": 1.0,
+        "fee_per_day": 100,
+        "net_worst_regime_value": 152768.63333333333
+      },
+      "runner_up": {
+        "candidate": "service_milp",
+        "resource": "budget_plus_10pct",
+        "eligible": true,
+        "service_eligible": true,
+        "quality_eligible": true,
+        "worst_regime_value": 152364.26666666666,
+        "min_fill": 0.8352109453574715,
+        "min_worst": 0.8049108417335851,
+        "economic_certified_fraction": 0.9920634920634921,
+        "primary_certified_fraction": 1.0,
+        "fee_per_day": 100,
+        "net_worst_regime_value": 148164.26666666666
+      }
+    },
+    {
+      "mandate": "value_led",
+      "fee_per_day": 250,
+      "status": "frozen",
+      "selected": {
+        "candidate": "economic_milp",
+        "resource": "budget_plus_10pct",
+        "eligible": true,
+        "service_eligible": true,
+        "quality_eligible": true,
+        "worst_regime_value": 156968.63333333333,
+        "min_fill": 0.8371489799104629,
+        "min_worst": 0.6580798864502005,
+        "economic_certified_fraction": 1.0,
+        "primary_certified_fraction": 1.0,
+        "fee_per_day": 250,
+        "net_worst_regime_value": 146468.63333333333
+      },
+      "runner_up": {
+        "candidate": "service_milp",
+        "resource": "budget_plus_10pct",
+        "eligible": true,
+        "service_eligible": true,
+        "quality_eligible": true,
+        "worst_regime_value": 152364.26666666666,
+        "min_fill": 0.8352109453574715,
+        "min_worst": 0.8049108417335851,
+        "economic_certified_fraction": 0.9920634920634921,
+        "primary_certified_fraction": 1.0,
+        "fee_per_day": 250,
+        "net_worst_regime_value": 141864.26666666666
+      }
+    },
+    {
+      "mandate": "value_led",
+      "fee_per_day": 500,
+      "status": "frozen",
+      "selected": {
+        "candidate": "economic_milp",
+        "resource": "budget_plus_10pct",
+        "eligible": true,
+        "service_eligible": true,
+        "quality_eligible": true,
+        "worst_regime_value": 156968.63333333333,
+        "min_fill": 0.8371489799104629,
+        "min_worst": 0.6580798864502005,
+        "economic_certified_fraction": 1.0,
+        "primary_certified_fraction": 1.0,
+        "fee_per_day": 500,
+        "net_worst_regime_value": 135968.63333333333
+      },
+      "runner_up": {
+        "candidate": "service_milp",
+        "resource": "budget_plus_10pct",
+        "eligible": true,
+        "service_eligible": true,
+        "quality_eligible": true,
+        "worst_regime_value": 152364.26666666666,
+        "min_fill": 0.8352109453574715,
+        "min_worst": 0.8049108417335851,
+        "economic_certified_fraction": 0.9920634920634921,
+        "primary_certified_fraction": 1.0,
+        "fee_per_day": 500,
+        "net_worst_regime_value": 131364.26666666666
+      }
+    },
+    {
+      "mandate": "channel_protection",
+      "fee_per_day": 0,
+      "status": "frozen",
+      "selected": {
+        "candidate": "service_milp",
+        "resource": "budget_plus_10pct",
+        "eligible": true,
+        "service_eligible": true,
+        "quality_eligible": true,
+        "worst_regime_value": 152364.26666666666,
+        "min_fill": 0.8352109453574715,
+        "min_worst": 0.8049108417335851,
+        "economic_certified_fraction": 0.9920634920634921,
+        "primary_certified_fraction": 1.0,
+        "fee_per_day": 0,
+        "net_worst_regime_value": 152364.26666666666
+      },
+      "runner_up": {
+        "candidate": "stock",
+        "resource": "budget_plus_10pct",
+        "eligible": true,
+        "service_eligible": true,
+        "quality_eligible": true,
+        "worst_regime_value": 139117.73333333334,
+        "min_fill": 0.8686295996256405,
+        "min_worst": 0.8236871318134948,
+        "economic_certified_fraction": 1.0,
+        "primary_certified_fraction": 1.0,
+        "fee_per_day": 0,
+        "net_worst_regime_value": 139117.73333333334
+      }
+    },
+    {
+      "mandate": "channel_protection",
+      "fee_per_day": 100,
+      "status": "frozen",
+      "selected": {
+        "candidate": "service_milp",
+        "resource": "budget_plus_10pct",
+        "eligible": true,
+        "service_eligible": true,
+        "quality_eligible": true,
+        "worst_regime_value": 152364.26666666666,
+        "min_fill": 0.8352109453574715,
+        "min_worst": 0.8049108417335851,
+        "economic_certified_fraction": 0.9920634920634921,
+        "primary_certified_fraction": 1.0,
+        "fee_per_day": 100,
+        "net_worst_regime_value": 148164.26666666666
+      },
+      "runner_up": {
+        "candidate": "stock",
+        "resource": "budget_plus_10pct",
+        "eligible": true,
+        "service_eligible": true,
+        "quality_eligible": true,
+        "worst_regime_value": 139117.73333333334,
+        "min_fill": 0.8686295996256405,
+        "min_worst": 0.8236871318134948,
+        "economic_certified_fraction": 1.0,
+        "primary_certified_fraction": 1.0,
+        "fee_per_day": 100,
+        "net_worst_regime_value": 134917.73333333334
+      }
+    },
+    {
+      "mandate": "channel_protection",
+      "fee_per_day": 250,
+      "status": "frozen",
+      "selected": {
+        "candidate": "service_milp",
+        "resource": "budget_plus_10pct",
+        "eligible": true,
+        "service_eligible": true,
+        "quality_eligible": true,
+        "worst_regime_value": 152364.26666666666,
+        "min_fill": 0.8352109453574715,
+        "min_worst": 0.8049108417335851,
+        "economic_certified_fraction": 0.9920634920634921,
+        "primary_certified_fraction": 1.0,
+        "fee_per_day": 250,
+        "net_worst_regime_value": 141864.26666666666
+      },
+      "runner_up": {
+        "candidate": "stock",
+        "resource": "budget_plus_10pct",
+        "eligible": true,
+        "service_eligible": true,
+        "quality_eligible": true,
+        "worst_regime_value": 139117.73333333334,
+        "min_fill": 0.8686295996256405,
+        "min_worst": 0.8236871318134948,
+        "economic_certified_fraction": 1.0,
+        "primary_certified_fraction": 1.0,
+        "fee_per_day": 250,
+        "net_worst_regime_value": 128617.73333333334
+      }
+    },
+    {
+      "mandate": "channel_protection",
+      "fee_per_day": 500,
+      "status": "frozen",
+      "selected": {
+        "candidate": "service_milp",
+        "resource": "budget_plus_10pct",
+        "eligible": true,
+        "service_eligible": true,
+        "quality_eligible": true,
+        "worst_regime_value": 152364.26666666666,
+        "min_fill": 0.8352109453574715,
+        "min_worst": 0.8049108417335851,
+        "economic_certified_fraction": 0.9920634920634921,
+        "primary_certified_fraction": 1.0,
+        "fee_per_day": 500,
+        "net_worst_regime_value": 131364.26666666666
+      },
+      "runner_up": {
+        "candidate": "stock",
+        "resource": "budget_plus_10pct",
+        "eligible": true,
+        "service_eligible": true,
+        "quality_eligible": true,
+        "worst_regime_value": 139117.73333333334,
+        "min_fill": 0.8686295996256405,
+        "min_worst": 0.8236871318134948,
+        "economic_certified_fraction": 1.0,
+        "primary_certified_fraction": 1.0,
+        "fee_per_day": 500,
+        "net_worst_regime_value": 118117.73333333334
+      }
+    },
+    {
+      "mandate": "broad_service",
+      "fee_per_day": 0,
+      "status": "frozen",
+      "selected": {
+        "candidate": "stock",
+        "resource": "budget_plus_10pct",
+        "eligible": true,
+        "service_eligible": true,
+        "quality_eligible": true,
+        "worst_regime_value": 139117.73333333334,
+        "min_fill": 0.8686295996256405,
+        "min_worst": 0.8236871318134948,
+        "economic_certified_fraction": 1.0,
+        "primary_certified_fraction": 1.0,
+        "fee_per_day": 0,
+        "net_worst_regime_value": 139117.73333333334
+      },
+      "runner_up": null
+    },
+    {
+      "mandate": "broad_service",
+      "fee_per_day": 100,
+      "status": "frozen",
+      "selected": {
+        "candidate": "stock",
+        "resource": "budget_plus_10pct",
+        "eligible": true,
+        "service_eligible": true,
+        "quality_eligible": true,
+        "worst_regime_value": 139117.73333333334,
+        "min_fill": 0.8686295996256405,
+        "min_worst": 0.8236871318134948,
+        "economic_certified_fraction": 1.0,
+        "primary_certified_fraction": 1.0,
+        "fee_per_day": 100,
+        "net_worst_regime_value": 134917.73333333334
+      },
+      "runner_up": null
+    },
+    {
+      "mandate": "broad_service",
+      "fee_per_day": 250,
+      "status": "frozen",
+      "selected": {
+        "candidate": "stock",
+        "resource": "budget_plus_10pct",
+        "eligible": true,
+        "service_eligible": true,
+        "quality_eligible": true,
+        "worst_regime_value": 139117.73333333334,
+        "min_fill": 0.8686295996256405,
+        "min_worst": 0.8236871318134948,
+        "economic_certified_fraction": 1.0,
+        "primary_certified_fraction": 1.0,
+        "fee_per_day": 250,
+        "net_worst_regime_value": 128617.73333333334
+      },
+      "runner_up": null
+    },
+    {
+      "mandate": "broad_service",
+      "fee_per_day": 500,
+      "status": "frozen",
+      "selected": {
+        "candidate": "stock",
+        "resource": "budget_plus_10pct",
+        "eligible": true,
+        "service_eligible": true,
+        "quality_eligible": true,
+        "worst_regime_value": 139117.73333333334,
+        "min_fill": 0.8686295996256405,
+        "min_worst": 0.8236871318134948,
+        "economic_certified_fraction": 1.0,
+        "primary_certified_fraction": 1.0,
+        "fee_per_day": 500,
+        "net_worst_regime_value": 118117.73333333334
+      },
+      "runner_up": null
+    },
+    {
+      "mandate": "strict",
+      "fee_per_day": 0,
+      "status": "no_supported_option",
+      "selected": null,
+      "runner_up": null
+    },
+    {
+      "mandate": "strict",
+      "fee_per_day": 100,
+      "status": "no_supported_option",
+      "selected": null,
+      "runner_up": null
+    },
+    {
+      "mandate": "strict",
+      "fee_per_day": 250,
+      "status": "no_supported_option",
+      "selected": null,
+      "runner_up": null
+    },
+    {
+      "mandate": "strict",
+      "fee_per_day": 500,
+      "status": "no_supported_option",
+      "selected": null,
+      "runner_up": null
+    }
+  ],
+  "validation_ledger_max_error": 5.820766091346741e-11,
+  "validation_files": {
+    "validation_episodes.csv": "6b21663e5ed81879cb13658145bd7c21c1cd2cee111f938a2a884ffddf594a7a",
+    "validation_daily.csv": "8df47e1b393a0fa596ff0b4eddbb7a2ca43dff6dc9c3e8c70ce1b9a19f5c9325",
+    "validation_channels.csv": "0456229c40a964a2730fd31fce56ea90eac141ff69f16b9ef37c8525b1a38a7f",
+    "validation_cells.csv": "b4a8ce6f4e442620e4819bf50ccc6f56a5e0a0e316521594257c9e5f36fbd3df",
+    "validation_eligibility.csv": "e1ca1b7a740b750cdd615112ef71a6890de250e9d6f1d1877d6aa2bd6eb5e710",
+    "validation_fee_thresholds.csv": "7e7c79ffe5ca5a5e48c5f31105c4c8bd83f3d3afd2176b2f202c57c4d5649ac9"
+  }
+}
