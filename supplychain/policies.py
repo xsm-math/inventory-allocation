@@ -64,8 +64,9 @@ def base_stock(net,state,forecast,day,supply_factor=1.,review_days=2,allocation_
 
 def decide(net,state,history,day,remaining,policy,horizon=5,supply_factor=1.,time_limit=2.,baseline_horizon=None,
            forecast_buffer=None,review_days=2,allocation_rule='coverage',service_history=None,
-           service_goal=.9,service_tolerance=0.,service_precision=.001):
+           service_goal=.9,service_tolerance=0.,service_precision=.001,solver_backend='scipy',economic_precision=None):
     if policy not in POLICIES:raise ValueError('Unknown policy')
+    if solver_backend not in {'scipy','highs'}:raise ValueError('Unknown solver backend')
     if baseline_horizon is not None and (isinstance(baseline_horizon,(bool,np.bool_))
             or not isinstance(baseline_horizon,(int,np.integer)) or baseline_horizon<1):
         raise ValueError('Baseline horizon must be a positive integer')
@@ -93,11 +94,11 @@ def decide(net,state,history,day,remaining,policy,horizon=5,supply_factor=1.,tim
     try:
         if policy=='mpc_service':
             control={**service_history,'goal':service_goal,'tolerance':service_tolerance,'precision':service_precision}
-            return plan(net,state,demand,day,supply_factor,time_limit,service_control=control)
+            return plan(net,state,demand,day,supply_factor,time_limit,service_control=control,solver_backend=solver_backend,economic_precision=economic_precision)
         if policy=='mpc_safety':
             reserve=safety_stock(history,net.supplier_lead,net.raw.get('safety_quantile',.9))
-            return plan(net,state,demand,day,supply_factor,time_limit,safety=reserve)
-        return plan(net,state,demand,day,supply_factor,time_limit)
+            return plan(net,state,demand,day,supply_factor,time_limit,safety=reserve,solver_backend=solver_backend,economic_precision=economic_precision)
+        return plan(net,state,demand,day,supply_factor,time_limit,solver_backend=solver_backend,economic_precision=economic_precision)
     except RuntimeError as exc:
         action=base_stock(net,state,demand,day,supply_factor)
         action.diagnostics.update(fallback=True,solver_status=4,solver_message=str(exc))

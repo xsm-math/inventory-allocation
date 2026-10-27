@@ -7,11 +7,14 @@ from scipy.sparse import coo_matrix
 from .network import Action, validate_action, validate_supply_factor
 
 class Model:
-    def __init__(self):
-        self.c=[];self.ub=[];self.integer=[];self.row=[];self.col=[];self.val=[];self.lo=[];self.hi=[]
+    def __init__(self,backend='scipy'):
+        if backend not in {'scipy','highs'}:raise ValueError('Unknown solver backend')
+        self.backend=backend;self.mip_start=None
+        self.c=[];self.lower=[];self.ub=[];self.integer=[];self.row=[];self.col=[];self.val=[];self.lo=[];self.hi=[]
     def vars(self,shape,cost=0,upper=np.inf,integer=False):
         n=int(np.prod(shape));v=np.arange(len(self.c),len(self.c)+n).reshape(shape)
         self.c.extend(np.broadcast_to(cost,shape).ravel());self.ub.extend(np.broadcast_to(upper,shape).ravel());self.integer.extend([int(integer)]*n)
+        self.lower.extend([0.]*n)
         return v
     def constraint(self, terms, lower=-np.inf, upper=np.inf):
         r=len(self.lo)
@@ -21,6 +24,9 @@ class Model:
         self.lo.append(lower);self.hi.append(upper)
     def solve(self,time_limit,gap,absolute_gap=None):
         A=coo_matrix((self.val,(self.row,self.col)),shape=(len(self.lo),len(self.c))).tocsc()
+        if self.backend=='highs':
+            from .native_solver import solve_native
+            return solve_native(self,A,time_limit,gap,absolute_gap),A
         options={'time_limit':time_limit,'mip_rel_gap':gap}
         if absolute_gap is not None:
             if isinstance(absolute_gap,(bool,np.bool_)) or not np.isfinite(absolute_gap) or absolute_gap<0:
@@ -30,7 +36,7 @@ class Model:
             options['mip_abs_gap']=absolute_gap
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore',message=r"Unrecognized options detected: \{'mip_abs_gap'\}.*",category=RuntimeWarning)
-            result=milp(np.asarray(self.c),integrality=np.asarray(self.integer),bounds=Bounds(np.zeros(len(self.c)),self.ub),constraints=LinearConstraint(A,self.lo,self.hi),options=options)
+            result=milp(np.asarray(self.c),integrality=np.asarray(self.integer),bounds=Bounds(self.lower,self.ub),constraints=LinearConstraint(A,self.lo,self.hi),options=options)
         return result,A
 
 
@@ -40,21 +46,23 @@ def checked_incumbent(model,result,matrix):
     v=result.x
     if not np.isfinite(v).all() or not np.isfinite(result.fun):
         raise RuntimeError('Nonfinite solver incumbent')
-    violation=max(float(np.maximum(np.asarray(model.lo)-matrix@v,0).max()),float(np.maximum(matrix@v-np.asarray(model.hi),0).max()),float(np.maximum(-v,0).max()),float(np.maximum(v-np.asarray(model.ub),0).max()))
+    violation=max(float(np.maximum(np.asarray(model.lo)-matrix@v,0).max()),float(np.maximum(matrix@v-np.asarray(model.hi),0).max()),float(np.maximum(np.asarray(model.lower)-v,0).max()),float(np.maximum(v-np.asarray(model.ub),0).max()))
     integer_error=float(np.abs(v[np.asarray(model.integer,dtype=bool)]-np.rint(v[np.asarray(model.integer,dtype=bool)])).max())
     if violation>1e-5 or integer_error>1e-5:
         raise RuntimeError('Solver incumbent failed feasibility checks')
     return v,violation
 
 
-def plan(net,state,forecast,day=0,supply_factor=1.,time_limit=2.,gap=.02, service=True, safety=None,service_control=None):
+def plan(net,state,forecast,day=0,supply_factor=1.,time_limit=2.,gap=.02, service=True, safety=None,service_control=None,solver_backend='scipy',economic_precision=None):
     d=np.asarray(forecast,float)
     if d.ndim!=3 or d.shape[1:]!=(net.C,net.P) or len(d)<1 or not np.isfinite(d).all() or (d<0).any() or (d%1).any():
         raise ValueError('Forecast must be integer horizon/channel/product demand')
     validate_supply_factor(supply_factor)
     if not np.isfinite(time_limit) or not np.isfinite(gap) or time_limit<=0 or not 0<=gap<=1:
         raise ValueError('Invalid solver or supply settings')
-    H=len(d);m=Model();start=perf_counter()
+    if economic_precision is not None and (isinstance(economic_precision,(bool,np.bool_)) or not np.isfinite(economic_precision) or economic_precision<0):
+        raise ValueError('Invalid economic absolute precision')
+    H=len(d);m=Model(solver_backend);start=perf_counter()
     # Integer physical controls; linear inventory and sales variables remain continuous.
     q_upper=np.broadcast_to(np.floor(net.supplier_capacity*supply_factor),(H,net.W,net.P)).copy()
     q_upper[max(0,H-net.supplier_lead):]=0
@@ -140,13 +148,21 @@ def plan(net,state,forecast,day=0,supply_factor=1.,time_limit=2.,gap=.02, servic
                          lower=goal*denominator[c]-past_sold[c])
         economic_cost=np.asarray(m.c).copy()
         m.c=np.zeros(len(m.c));m.c[deficit]=1.
+        if solver_backend=='highs':
+            # Activation has zero primary-stage cost. Fixing all z=1 leaves
+            # the projected feasible shipment set unchanged and removes symmetry.
+            m.lower=np.asarray(m.lower);m.lower[z]=1.
         primary,A_primary=m.solve(time_limit/2,0.,precision)
         first,_=checked_incumbent(m,primary,A_primary)
+        if solver_backend=='highs':
+            m.lower[z]=0.
+            first[z]=(first[x].sum(axis=-1)>1e-6).astype(float)
         primary_deficit=max(0.,float(first[deficit[0]]))
         cap=min(goal,primary_deficit+tolerance)
         m.constraint([(deficit,1)],upper=cap+1e-9)
         m.c=economic_cost
-        res,A=m.solve(time_limit/2,gap)
+        if solver_backend=='highs':m.mip_start=first.copy()
+        res,A=(m.solve(time_limit/2,gap) if economic_precision is None else m.solve(time_limit/2,gap,economic_precision))
         refinement_fallback=False
         try:
             v,violation=checked_incumbent(m,res,A)
@@ -170,10 +186,13 @@ def plan(net,state,forecast,day=0,supply_factor=1.,time_limit=2.,gap=.02, servic
                       'service_primary_exact':bool(primary.status==0 and bound_gap is not None and bound_gap<=1e-8),
                       'service_deficit_cap':cap,
                       'service_projected_min_fill':float(projection.min()),
+                      'service_warm_start_submitted':bool(getattr(res,'warm_start_submitted',False)),
+                      'service_start_retained':bool(getattr(res,'start_retained',False)),
+                      'service_warm_start_economic_objective':getattr(res,'warm_start_objective',None),
                       'service_refinement_fallback':refinement_fallback}
         objective=float(economic_cost@v)
     else:
-        res,A=m.solve(time_limit,gap)
+        res,A=(m.solve(time_limit,gap) if economic_precision is None else m.solve(time_limit,gap,economic_precision))
         v,violation=checked_incumbent(m,res,A)
         refinement_fallback=False
         objective=float(res.fun)
@@ -182,6 +201,15 @@ def plan(net,state,forecast,day=0,supply_factor=1.,time_limit=2.,gap=.02, servic
     reported_gap=float(reported_gap) if not refinement_fallback and reported_gap is not None and np.isfinite(reported_gap) else None
     diag.update(mip_gap=reported_gap,planning_objective=objective,max_constraint_violation=violation,
                 fallback=refinement_fallback,**service_diag)
+    economic_bound=getattr(res,'mip_dual_bound',None)
+    economic_absolute=getattr(res,'mip_absolute_gap',None)
+    diag.update(solver_backend=solver_backend,solver_version=getattr(res,'solver_version',None),
+                planning_dual_bound=float(economic_bound) if economic_bound is not None and np.isfinite(economic_bound) else None,
+                planning_absolute_gap=float(economic_absolute) if economic_absolute is not None and np.isfinite(economic_absolute) else None)
+    diag['economic_precision']=economic_precision
+    diag['economic_gap_certified']=bool((reported_gap is not None and reported_gap<=gap+1e-8)
+        or (not refinement_fallback and economic_precision is not None and economic_absolute is not None
+            and np.isfinite(economic_absolute) and economic_absolute<=economic_precision+1e-7))
     action=Action(np.rint(v[q[0]]).astype(int),np.rint(v[x[0]]).astype(int),diag)
     validate_action(net,state,action,supply_factor)
     return action

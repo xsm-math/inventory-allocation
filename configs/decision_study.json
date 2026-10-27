@@ -1,0 +1,22 @@
+{
+  "experiment": "frozen-decision-v1",
+  "days": 42,
+  "horizon": 5,
+  "time_limit": 4.0,
+  "economic_precision": 25.0,
+  "workers": 6,
+  "bootstrap_samples": 2000,
+  "regimes": ["normal", "surge", "supply_shock"],
+  "validation_seeds": [50001, 50002, 50003, 50004, 50005, 50006],
+  "test_seeds": [60001, 60002, 60003, 60004, 60005, 60006, 60007, 60008, 60009, 60010, 60011, 60012],
+  "resources": [{"name": "base", "budget_multiplier": 1.0}, {"name": "budget_plus_10pct", "budget_multiplier": 1.1}],
+  "economic_certified_fraction": 0.98,
+  "primary_certified_fraction": 0.99,
+  "fees_per_day": [0, 100, 250, 500],
+  "mandates": [
+    {"name": "value_led", "fill": 0.80, "worst": 0.60},
+    {"name": "channel_protection", "fill": 0.80, "worst": 0.75},
+    {"name": "broad_service", "fill": 0.85, "worst": 0.75},
+    {"name": "strict", "fill": 0.90, "worst": 0.80}
+  ]
+}
