@@ -3,3 +3,4 @@
 *.svg whitespace=-blank-at-eol
 # Keep generated evidence bytes identical to the recorded file hashes.
 results/service_frontier/** -text whitespace=-blank-at-eol,cr-at-eol
+results/budget_service/** -text whitespace=-blank-at-eol,cr-at-eol

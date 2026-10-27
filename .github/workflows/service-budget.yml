@@ -1,0 +1,24 @@
+name: Inventory service priority and budget study
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  study:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - run: python -m pip install -r requirements-lock.txt
+      - run: python -m unittest discover -s tests -v
+      - run: python -m supplychain.service_budget --stage validate --output results/service-budget-ci
+      - run: python -m supplychain.service_budget --stage test --output results/service-budget-ci
+      - run: python scripts/service_budget_diagnostics.py --run-dir results/service-budget-ci
+      - run: python -m supplychain.service_budget --stage report --output results/service-budget-ci
+      - uses: actions/upload-artifact@v4
+        with:
+          name: inventory-service-budget-study
+          path: results/service-budget-ci/

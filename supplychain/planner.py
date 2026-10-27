@@ -1,5 +1,6 @@
 """Sparse mixed-integer receding-horizon inventory/transport model."""
 from time import perf_counter
+import warnings
 import numpy as np
 from scipy.optimize import milp, Bounds, LinearConstraint
 from scipy.sparse import coo_matrix
@@ -18,13 +19,35 @@ class Model:
             idx=np.asarray(indices).ravel();coef=np.broadcast_to(coeff,np.asarray(indices).shape).ravel()
             self.row.extend([r]*len(idx));self.col.extend(idx);self.val.extend(coef)
         self.lo.append(lower);self.hi.append(upper)
-    def solve(self,time_limit,gap):
+    def solve(self,time_limit,gap,absolute_gap=None):
         A=coo_matrix((self.val,(self.row,self.col)),shape=(len(self.lo),len(self.c))).tocsc()
-        result=milp(np.asarray(self.c),integrality=np.asarray(self.integer),bounds=Bounds(np.zeros(len(self.c)),self.ub),constraints=LinearConstraint(A,self.lo,self.hi),options={'time_limit':time_limit,'mip_rel_gap':gap})
+        options={'time_limit':time_limit,'mip_rel_gap':gap}
+        if absolute_gap is not None:
+            if isinstance(absolute_gap,(bool,np.bool_)) or not np.isfinite(absolute_gap) or absolute_gap<0:
+                raise ValueError('Invalid absolute MIP gap')
+            # SciPy forwards this native HiGHS option verbatim; only suppress
+            # its wrapper's known "unrecognized option" forwarding notice.
+            options['mip_abs_gap']=absolute_gap
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore',message=r"Unrecognized options detected: \{'mip_abs_gap'\}.*",category=RuntimeWarning)
+            result=milp(np.asarray(self.c),integrality=np.asarray(self.integer),bounds=Bounds(np.zeros(len(self.c)),self.ub),constraints=LinearConstraint(A,self.lo,self.hi),options=options)
         return result,A
 
 
-def plan(net,state,forecast,day=0,supply_factor=1.,time_limit=2.,gap=.02, service=True, safety=None):
+def checked_incumbent(model,result,matrix):
+    if result.x is None:
+        raise RuntimeError(f'No feasible incumbent: {result.message}')
+    v=result.x
+    if not np.isfinite(v).all() or not np.isfinite(result.fun):
+        raise RuntimeError('Nonfinite solver incumbent')
+    violation=max(float(np.maximum(np.asarray(model.lo)-matrix@v,0).max()),float(np.maximum(matrix@v-np.asarray(model.hi),0).max()),float(np.maximum(-v,0).max()),float(np.maximum(v-np.asarray(model.ub),0).max()))
+    integer_error=float(np.abs(v[np.asarray(model.integer,dtype=bool)]-np.rint(v[np.asarray(model.integer,dtype=bool)])).max())
+    if violation>1e-5 or integer_error>1e-5:
+        raise RuntimeError('Solver incumbent failed feasibility checks')
+    return v,violation
+
+
+def plan(net,state,forecast,day=0,supply_factor=1.,time_limit=2.,gap=.02, service=True, safety=None,service_control=None):
     d=np.asarray(forecast,float)
     if d.ndim!=3 or d.shape[1:]!=(net.C,net.P) or len(d)<1 or not np.isfinite(d).all() or (d<0).any() or (d%1).any():
         raise ValueError('Forecast must be integer horizon/channel/product demand')
@@ -97,20 +120,68 @@ def plan(net,state,forecast,day=0,supply_factor=1.,time_limit=2.,gap=.02, servic
     for c in range(net.C):
         for p in range(net.P):
             m.constraint([(sold[:,c,p],1),(slack[c,p],1)],lower=(net.service_target if service else 0)*d[:,c,p].sum())
-    res,A=m.solve(time_limit,gap)
+    service_diag={}
+    if service_control is not None:
+        past_demand=np.asarray(service_control['demand'],float)
+        past_sold=np.asarray(service_control['sold'],float)
+        goal=service_control['goal'];tolerance=service_control['tolerance']
+        precision=service_control.get('precision',.001)
+        if (past_demand.shape!=(net.C,) or past_sold.shape!=(net.C,)
+                or not np.isfinite(past_demand).all() or not np.isfinite(past_sold).all()
+                or (past_sold<0).any() or (past_demand<past_sold).any()
+                or isinstance(goal,(bool,np.bool_)) or isinstance(tolerance,(bool,np.bool_))
+                or isinstance(precision,(bool,np.bool_)) or not np.isfinite([goal,tolerance,precision]).all()
+                or not 0<=goal<=1 or not 0<=tolerance<=1 or not 0<=precision<=1):
+            raise ValueError('Invalid observed service history or controls')
+        denominator=past_demand+d.sum((0,2))
+        deficit=m.vars((1,),0,upper=goal)
+        for c in range(net.C):
+            m.constraint([(sold[:,c,:],1),(deficit,denominator[c])],
+                         lower=goal*denominator[c]-past_sold[c])
+        economic_cost=np.asarray(m.c).copy()
+        m.c=np.zeros(len(m.c));m.c[deficit]=1.
+        primary,A_primary=m.solve(time_limit/2,0.,precision)
+        first,_=checked_incumbent(m,primary,A_primary)
+        primary_deficit=max(0.,float(first[deficit[0]]))
+        cap=min(goal,primary_deficit+tolerance)
+        m.constraint([(deficit,1)],upper=cap+1e-9)
+        m.c=economic_cost
+        res,A=m.solve(time_limit/2,gap)
+        refinement_fallback=False
+        try:
+            v,violation=checked_incumbent(m,res,A)
+        except RuntimeError:
+            # The checked service incumbent also satisfies the new upper bound.
+            # Keep its feasible physical action if economic refinement fails.
+            v,violation=checked_incumbent(m,primary,A)
+            refinement_fallback=True
+        bound=getattr(primary,'mip_dual_bound',None)
+        bound=float(bound) if bound is not None and np.isfinite(bound) else None
+        bound_gap=max(0.,primary_deficit-bound) if bound is not None else None
+        projection=np.divide(past_sold+v[sold].sum((0,2)),denominator,
+                             out=np.ones(net.C),where=denominator>0)
+        service_diag={'service_primary_status':int(primary.status),
+                      'service_economic_status':int(res.status),
+                      'service_primary_incumbent_deficit':primary_deficit,
+                      'service_primary_bound':bound,
+                      'service_primary_absolute_gap':bound_gap,
+                      'service_primary_precision':precision,
+                      'service_primary_precision_met':bound_gap is not None and bound_gap<=precision+1e-8,
+                      'service_primary_exact':bool(primary.status==0 and bound_gap is not None and bound_gap<=1e-8),
+                      'service_deficit_cap':cap,
+                      'service_projected_min_fill':float(projection.min()),
+                      'service_refinement_fallback':refinement_fallback}
+        objective=float(economic_cost@v)
+    else:
+        res,A=m.solve(time_limit,gap)
+        v,violation=checked_incumbent(m,res,A)
+        refinement_fallback=False
+        objective=float(res.fun)
     diag={'solver_status':int(res.status),'solver_message':res.message,'solve_seconds':perf_counter()-start,'variables':len(m.c),'constraints':len(m.lo),'integer_variables':sum(m.integer),'mip_gap':None,'fallback':False}
-    if res.x is None:
-        raise RuntimeError(f'No feasible incumbent: {res.message}')
-    v=res.x
-    if not np.isfinite(v).all() or not np.isfinite(res.fun):
-        raise RuntimeError('Nonfinite solver incumbent')
-    violation=max(float(np.maximum(np.asarray(m.lo)-A@v,0).max()),float(np.maximum(A@v-np.asarray(m.hi),0).max()),float(np.maximum(-v,0).max()),float(np.maximum(v-np.asarray(m.ub),0).max()))
-    integer_error=float(np.abs(v[np.asarray(m.integer,dtype=bool)]-np.rint(v[np.asarray(m.integer,dtype=bool)])).max())
-    if violation>1e-5 or integer_error>1e-5:
-        raise RuntimeError('Solver incumbent failed feasibility checks')
     reported_gap=getattr(res,'mip_gap',None)
-    reported_gap=float(reported_gap) if reported_gap is not None and np.isfinite(reported_gap) else None
-    diag.update(mip_gap=reported_gap,planning_objective=float(res.fun),max_constraint_violation=violation)
+    reported_gap=float(reported_gap) if not refinement_fallback and reported_gap is not None and np.isfinite(reported_gap) else None
+    diag.update(mip_gap=reported_gap,planning_objective=objective,max_constraint_violation=violation,
+                fallback=refinement_fallback,**service_diag)
     action=Action(np.rint(v[q[0]]).astype(int),np.rint(v[x[0]]).astype(int),diag)
     validate_action(net,state,action,supply_factor)
     return action

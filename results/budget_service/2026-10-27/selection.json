@@ -1,0 +1,251 @@
+{
+  "protocol": {
+    "experiment": "service-budget-v2",
+    "days": 42,
+    "horizon": 5,
+    "time_limit": 2.0,
+    "regimes": [
+      "normal",
+      "surge",
+      "supply_shock"
+    ],
+    "development_seeds": [
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      201,
+      202,
+      203,
+      204,
+      205,
+      206,
+      10001,
+      10002,
+      10003,
+      10004,
+      10005,
+      10006,
+      20001,
+      20002,
+      20003,
+      20004,
+      20005,
+      20006,
+      20007,
+      20008,
+      20009,
+      20010,
+      20011,
+      20012
+    ],
+    "runtime_development_seeds": [
+      30001,
+      30002,
+      30003,
+      30004
+    ],
+    "validation_seeds": [
+      31001,
+      31002,
+      31003,
+      31004
+    ],
+    "test_seeds": [
+      40001,
+      40002,
+      40003,
+      40004,
+      40005,
+      40006,
+      40007,
+      40008
+    ],
+    "resources": [
+      {
+        "name": "base",
+        "budget_multiplier": 1.0
+      },
+      {
+        "name": "budget_plus_10pct",
+        "budget_multiplier": 1.1
+      }
+    ],
+    "forecast_buffer": 0.8,
+    "service_goal": 0.9,
+    "service_precision": 0.001,
+    "service_tolerances": [
+      0.0,
+      0.02,
+      0.05
+    ],
+    "planning_service_penalty": 32.0,
+    "stock_review_days": 4,
+    "selection_target": {
+      "fill": 0.85,
+      "worst": 0.75
+    },
+    "report_profiles": [
+      {
+        "name": "relaxed",
+        "fill": 0.8,
+        "worst": 0.6
+      },
+      {
+        "name": "balanced",
+        "fill": 0.85,
+        "worst": 0.75
+      },
+      {
+        "name": "strict",
+        "fill": 0.9,
+        "worst": 0.8
+      }
+    ]
+  },
+  "fingerprint": {
+    "protocol": "d4fb4074080794cbf4013dc04ef247c939aedee5bdac6a0454a82a4376ee927a",
+    "sources": {
+      "supplychain/__init__.py": "a44189822d7939c1134a4ba252fb5866b2938a0b09baf306b093e6d857ddf8a6",
+      "supplychain/__main__.py": "7a676762c27e5c767c5bab0693335d6d5420a544ef01dc3d2f1bcd0645cb98cd",
+      "supplychain/benchmark.py": "1cc91baff897e08f5ddfd0de5c2feb1cd3499ca0b245a92df7d041cd9d04155b",
+      "supplychain/forecast.py": "4f4163a4d184c7be793e5e580eee31d80939787097e3ac65eaede5a9d7c13320",
+      "supplychain/frontier.py": "6fce42cfa9b70c29a3736596d0d355d3214fd970533caf3e4ce9d15392a7cff4",
+      "supplychain/network.py": "84317f0e531b3ac91751dbf53a562b68b38e4d7aba0f8e565c454a683beed30b",
+      "supplychain/planner.py": "5f6b5450033c6bca95242028c9d66355ecbbd8def47061f6cfb5cc4709e9d446",
+      "supplychain/policies.py": "a236d68875d47598c8128cb21b7975804307a910313e53fad0906be1f91a3125",
+      "supplychain/research.py": "49536c523313bdaf68e9371dd86dc1d3cc96494639049de6e94bf1b3eaaeb137",
+      "supplychain/scaling.py": "70592f02d80f181e69817d71d8b96ef403253b335fdadfddac32b5a15d3ae426",
+      "supplychain/service_budget.py": "65ea69f4c88f0329de5a80349dbb86d962a765471231cd1c44a0e17b9c5852d9",
+      "supplychain/simulation.py": "641c4f3c4a8bc54a14a48574c7b9ead2ce2abc4d00b9ca46f22c3234ca52a192"
+    },
+    "network": "e09299772c61cf6641aab0293f5338f8713e98961806e25f71b8206b1969ea93",
+    "prior_protocol": "c7a47e2a789ac793dbf35ad8b682ed31b64f941aed2fbc76e2ab3df1413f6c13",
+    "bound_script": "adc63af8c6e7de5704882f0104b5246a3f85b42e6b37b4e91e7e84551274ebe1"
+  },
+  "candidates": [
+    {
+      "id": "stock",
+      "family": "stock",
+      "policy": "base_stock",
+      "options": {
+        "review_days": 4,
+        "forecast_buffer": 0.0
+      },
+      "network_overrides": {}
+    },
+    {
+      "id": "economic_milp",
+      "family": "economic_milp",
+      "policy": "mpc",
+      "options": {
+        "forecast_buffer": 0.8
+      },
+      "network_overrides": {
+        "service_slack_penalty": 32.0
+      }
+    },
+    {
+      "id": "service-d0",
+      "family": "service_milp",
+      "policy": "mpc_service",
+      "options": {
+        "forecast_buffer": 0.8,
+        "service_goal": 0.9,
+        "service_tolerance": 0.0,
+        "service_precision": 0.001
+      },
+      "network_overrides": {
+        "service_slack_penalty": 32.0
+      }
+    },
+    {
+      "id": "service-d0.02",
+      "family": "service_milp",
+      "policy": "mpc_service",
+      "options": {
+        "forecast_buffer": 0.8,
+        "service_goal": 0.9,
+        "service_tolerance": 0.02,
+        "service_precision": 0.001
+      },
+      "network_overrides": {
+        "service_slack_penalty": 32.0
+      }
+    },
+    {
+      "id": "service-d0.05",
+      "family": "service_milp",
+      "policy": "mpc_service",
+      "options": {
+        "forecast_buffer": 0.8,
+        "service_goal": 0.9,
+        "service_tolerance": 0.05,
+        "service_precision": 0.001
+      },
+      "network_overrides": {
+        "service_slack_penalty": 32.0
+      }
+    }
+  ],
+  "selected": [
+    {
+      "id": "stock",
+      "family": "stock",
+      "policy": "base_stock",
+      "options": {
+        "review_days": 4,
+        "forecast_buffer": 0.0
+      },
+      "network_overrides": {}
+    },
+    {
+      "id": "economic_milp",
+      "family": "economic_milp",
+      "policy": "mpc",
+      "options": {
+        "forecast_buffer": 0.8
+      },
+      "network_overrides": {
+        "service_slack_penalty": 32.0
+      }
+    },
+    {
+      "id": "service-d0.02",
+      "family": "service_milp",
+      "policy": "mpc_service",
+      "options": {
+        "forecast_buffer": 0.8,
+        "service_goal": 0.9,
+        "service_tolerance": 0.02,
+        "service_precision": 0.001
+      },
+      "network_overrides": {
+        "service_slack_penalty": 32.0
+      }
+    }
+  ],
+  "service_selection": {
+    "candidate": "service-d0.02",
+    "validation_eligible": false,
+    "validation_min_fill": 0.7957016110990685,
+    "validation_min_worst": 0.7705684200363672,
+    "validation_max_deficit": 0.05429838890093153,
+    "validation_mean_value": 162610.62083333332
+  },
+  "validation_ledger_max_error": 5.820766091346741e-11,
+  "frozen_at": "2026-10-27T02:04:58.644837+00:00",
+  "validation_files": {
+    "validation_episodes.csv": "bbf8f6fe2fc36388feed8a0a99b4eec908ebf21ccbc2ff41edd8f75c31a65b15",
+    "validation_cells.csv": "649aa44658d602c2a38d30daf46f921d5a9c913a7b63873bb97d13286c27581b",
+    "validation_statistics.csv": "0adf1388dec1d5efb7bd24ac7174f03bb6b0af5340921fdb5858dcf3f8ddf053"
+  }
+}

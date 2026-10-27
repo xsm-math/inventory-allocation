@@ -1,0 +1,18 @@
+{
+  "experiment": "service-budget-v2",
+  "days": 42,
+  "horizon": 5,
+  "time_limit": 2.0,
+  "regimes": ["normal", "surge", "supply_shock"],
+  "development_seeds": [101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 201, 202, 203, 204, 205, 206, 10001, 10002, 10003, 10004, 10005, 10006, 20001, 20002, 20003, 20004, 20005, 20006, 20007, 20008, 20009, 20010, 20011, 20012],
+  "validation_seeds": [30001, 30002, 30003, 30004],
+  "test_seeds": [40001, 40002, 40003, 40004, 40005, 40006, 40007, 40008],
+  "resources": [{"name": "base", "budget_multiplier": 1.0}, {"name": "budget_plus_10pct", "budget_multiplier": 1.1}],
+  "forecast_buffer": 0.8,
+  "service_goal": 0.9,
+  "service_tolerances": [0.0, 0.02, 0.05],
+  "planning_service_penalty": 32.0,
+  "stock_review_days": 4,
+  "selection_target": {"fill": 0.85, "worst": 0.75},
+  "report_profiles": [{"name": "relaxed", "fill": 0.80, "worst": 0.60}, {"name": "balanced", "fill": 0.85, "worst": 0.75}, {"name": "strict", "fill": 0.90, "worst": 0.80}]
+}
