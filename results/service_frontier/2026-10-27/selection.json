@@ -1,0 +1,530 @@
+{
+  "protocol": {
+    "experiment": "service-frontier-v1",
+    "days": 42,
+    "horizon": 5,
+    "time_limit": 2.0,
+    "regimes": [
+      "normal",
+      "surge",
+      "supply_shock"
+    ],
+    "development_seeds": [
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      201,
+      202,
+      203,
+      204,
+      205,
+      206
+    ],
+    "validation_seeds": [
+      10001,
+      10002,
+      10003,
+      10004,
+      10005,
+      10006
+    ],
+    "test_seeds": [
+      20001,
+      20002,
+      20003,
+      20004,
+      20005,
+      20006,
+      20007,
+      20008,
+      20009,
+      20010,
+      20011,
+      20012
+    ],
+    "buffers": [
+      0.0,
+      0.4,
+      0.8
+    ],
+    "review_days": [
+      1,
+      2,
+      4
+    ],
+    "service_penalties": [
+      0.0,
+      8.0,
+      32.0
+    ],
+    "service_profiles": [
+      {
+        "name": "relaxed",
+        "fill": 0.8,
+        "worst": 0.6
+      },
+      {
+        "name": "balanced",
+        "fill": 0.85,
+        "worst": 0.75
+      },
+      {
+        "name": "strict",
+        "fill": 0.9,
+        "worst": 0.8
+      }
+    ],
+    "service_noninferiority_margins": {
+      "fill": 0.01,
+      "worst": 0.03
+    }
+  },
+  "protocol_sha256": "2b1d6dc3fbaa8e9d11c147eaaa64be033de7f9076e213b0d7feb458da13039f9",
+  "source_sha256": {
+    "supplychain/__init__.py": "a44189822d7939c1134a4ba252fb5866b2938a0b09baf306b093e6d857ddf8a6",
+    "supplychain/__main__.py": "7a676762c27e5c767c5bab0693335d6d5420a544ef01dc3d2f1bcd0645cb98cd",
+    "supplychain/benchmark.py": "1cc91baff897e08f5ddfd0de5c2feb1cd3499ca0b245a92df7d041cd9d04155b",
+    "supplychain/forecast.py": "4f4163a4d184c7be793e5e580eee31d80939787097e3ac65eaede5a9d7c13320",
+    "supplychain/frontier.py": "6fce42cfa9b70c29a3736596d0d355d3214fd970533caf3e4ce9d15392a7cff4",
+    "supplychain/network.py": "84317f0e531b3ac91751dbf53a562b68b38e4d7aba0f8e565c454a683beed30b",
+    "supplychain/planner.py": "199fc01a6a4e13e2982e0f15a32eff3f77e65b29d184f7f318f9a226f63a588f",
+    "supplychain/policies.py": "adc9c68b79b1f09023a00107ba1a741463181827b6cb484c580199e32bcbc827",
+    "supplychain/research.py": "49536c523313bdaf68e9371dd86dc1d3cc96494639049de6e94bf1b3eaaeb137",
+    "supplychain/scaling.py": "70592f02d80f181e69817d71d8b96ef403253b335fdadfddac32b5a15d3ae426",
+    "supplychain/simulation.py": "7615cf0c0638673fed809777f83527043ff4884e4507ba691f302a6f752cc60e"
+  },
+  "network_sha256": "e09299772c61cf6641aab0293f5338f8713e98961806e25f71b8206b1969ea93",
+  "candidates": [
+    {
+      "id": "coverage_stock-r1-b0",
+      "family": "coverage_stock",
+      "policy": "base_stock",
+      "options": {
+        "review_days": 1,
+        "forecast_buffer": 0.0,
+        "allocation_rule": "coverage"
+      },
+      "network_overrides": {}
+    },
+    {
+      "id": "coverage_stock-r1-b0.4",
+      "family": "coverage_stock",
+      "policy": "base_stock",
+      "options": {
+        "review_days": 1,
+        "forecast_buffer": 0.4,
+        "allocation_rule": "coverage"
+      },
+      "network_overrides": {}
+    },
+    {
+      "id": "coverage_stock-r1-b0.8",
+      "family": "coverage_stock",
+      "policy": "base_stock",
+      "options": {
+        "review_days": 1,
+        "forecast_buffer": 0.8,
+        "allocation_rule": "coverage"
+      },
+      "network_overrides": {}
+    },
+    {
+      "id": "coverage_stock-r2-b0",
+      "family": "coverage_stock",
+      "policy": "base_stock",
+      "options": {
+        "review_days": 2,
+        "forecast_buffer": 0.0,
+        "allocation_rule": "coverage"
+      },
+      "network_overrides": {}
+    },
+    {
+      "id": "coverage_stock-r2-b0.4",
+      "family": "coverage_stock",
+      "policy": "base_stock",
+      "options": {
+        "review_days": 2,
+        "forecast_buffer": 0.4,
+        "allocation_rule": "coverage"
+      },
+      "network_overrides": {}
+    },
+    {
+      "id": "coverage_stock-r2-b0.8",
+      "family": "coverage_stock",
+      "policy": "base_stock",
+      "options": {
+        "review_days": 2,
+        "forecast_buffer": 0.8,
+        "allocation_rule": "coverage"
+      },
+      "network_overrides": {}
+    },
+    {
+      "id": "coverage_stock-r4-b0",
+      "family": "coverage_stock",
+      "policy": "base_stock",
+      "options": {
+        "review_days": 4,
+        "forecast_buffer": 0.0,
+        "allocation_rule": "coverage"
+      },
+      "network_overrides": {}
+    },
+    {
+      "id": "coverage_stock-r4-b0.4",
+      "family": "coverage_stock",
+      "policy": "base_stock",
+      "options": {
+        "review_days": 4,
+        "forecast_buffer": 0.4,
+        "allocation_rule": "coverage"
+      },
+      "network_overrides": {}
+    },
+    {
+      "id": "coverage_stock-r4-b0.8",
+      "family": "coverage_stock",
+      "policy": "base_stock",
+      "options": {
+        "review_days": 4,
+        "forecast_buffer": 0.8,
+        "allocation_rule": "coverage"
+      },
+      "network_overrides": {}
+    },
+    {
+      "id": "economic_stock-r1-b0",
+      "family": "economic_stock",
+      "policy": "base_stock",
+      "options": {
+        "review_days": 1,
+        "forecast_buffer": 0.0,
+        "allocation_rule": "economic"
+      },
+      "network_overrides": {}
+    },
+    {
+      "id": "economic_stock-r1-b0.4",
+      "family": "economic_stock",
+      "policy": "base_stock",
+      "options": {
+        "review_days": 1,
+        "forecast_buffer": 0.4,
+        "allocation_rule": "economic"
+      },
+      "network_overrides": {}
+    },
+    {
+      "id": "economic_stock-r1-b0.8",
+      "family": "economic_stock",
+      "policy": "base_stock",
+      "options": {
+        "review_days": 1,
+        "forecast_buffer": 0.8,
+        "allocation_rule": "economic"
+      },
+      "network_overrides": {}
+    },
+    {
+      "id": "economic_stock-r2-b0",
+      "family": "economic_stock",
+      "policy": "base_stock",
+      "options": {
+        "review_days": 2,
+        "forecast_buffer": 0.0,
+        "allocation_rule": "economic"
+      },
+      "network_overrides": {}
+    },
+    {
+      "id": "economic_stock-r2-b0.4",
+      "family": "economic_stock",
+      "policy": "base_stock",
+      "options": {
+        "review_days": 2,
+        "forecast_buffer": 0.4,
+        "allocation_rule": "economic"
+      },
+      "network_overrides": {}
+    },
+    {
+      "id": "economic_stock-r2-b0.8",
+      "family": "economic_stock",
+      "policy": "base_stock",
+      "options": {
+        "review_days": 2,
+        "forecast_buffer": 0.8,
+        "allocation_rule": "economic"
+      },
+      "network_overrides": {}
+    },
+    {
+      "id": "economic_stock-r4-b0",
+      "family": "economic_stock",
+      "policy": "base_stock",
+      "options": {
+        "review_days": 4,
+        "forecast_buffer": 0.0,
+        "allocation_rule": "economic"
+      },
+      "network_overrides": {}
+    },
+    {
+      "id": "economic_stock-r4-b0.4",
+      "family": "economic_stock",
+      "policy": "base_stock",
+      "options": {
+        "review_days": 4,
+        "forecast_buffer": 0.4,
+        "allocation_rule": "economic"
+      },
+      "network_overrides": {}
+    },
+    {
+      "id": "economic_stock-r4-b0.8",
+      "family": "economic_stock",
+      "policy": "base_stock",
+      "options": {
+        "review_days": 4,
+        "forecast_buffer": 0.8,
+        "allocation_rule": "economic"
+      },
+      "network_overrides": {}
+    },
+    {
+      "id": "milp-s0-b0",
+      "family": "milp",
+      "policy": "mpc",
+      "options": {
+        "forecast_buffer": 0.0
+      },
+      "network_overrides": {
+        "service_slack_penalty": 0.0
+      }
+    },
+    {
+      "id": "milp-s0-b0.4",
+      "family": "milp",
+      "policy": "mpc",
+      "options": {
+        "forecast_buffer": 0.4
+      },
+      "network_overrides": {
+        "service_slack_penalty": 0.0
+      }
+    },
+    {
+      "id": "milp-s0-b0.8",
+      "family": "milp",
+      "policy": "mpc",
+      "options": {
+        "forecast_buffer": 0.8
+      },
+      "network_overrides": {
+        "service_slack_penalty": 0.0
+      }
+    },
+    {
+      "id": "milp-s32-b0",
+      "family": "milp",
+      "policy": "mpc",
+      "options": {
+        "forecast_buffer": 0.0
+      },
+      "network_overrides": {
+        "service_slack_penalty": 32.0
+      }
+    },
+    {
+      "id": "milp-s32-b0.4",
+      "family": "milp",
+      "policy": "mpc",
+      "options": {
+        "forecast_buffer": 0.4
+      },
+      "network_overrides": {
+        "service_slack_penalty": 32.0
+      }
+    },
+    {
+      "id": "milp-s32-b0.8",
+      "family": "milp",
+      "policy": "mpc",
+      "options": {
+        "forecast_buffer": 0.8
+      },
+      "network_overrides": {
+        "service_slack_penalty": 32.0
+      }
+    },
+    {
+      "id": "milp-s8-b0",
+      "family": "milp",
+      "policy": "mpc",
+      "options": {
+        "forecast_buffer": 0.0
+      },
+      "network_overrides": {
+        "service_slack_penalty": 8.0
+      }
+    },
+    {
+      "id": "milp-s8-b0.4",
+      "family": "milp",
+      "policy": "mpc",
+      "options": {
+        "forecast_buffer": 0.4
+      },
+      "network_overrides": {
+        "service_slack_penalty": 8.0
+      }
+    },
+    {
+      "id": "milp-s8-b0.8",
+      "family": "milp",
+      "policy": "mpc",
+      "options": {
+        "forecast_buffer": 0.8
+      },
+      "network_overrides": {
+        "service_slack_penalty": 8.0
+      }
+    }
+  ],
+  "selected": [
+    {
+      "profile": "relaxed",
+      "family": "coverage_stock",
+      "candidate": "coverage_stock-r4-b0",
+      "validation_feasible": false,
+      "validation_min_fill": 0.7996380268350357,
+      "validation_min_worst": 0.724782336497782,
+      "validation_mean_value": 147564.68333333335,
+      "validation_max_service_deficit": 0.0003619731649643354
+    },
+    {
+      "profile": "relaxed",
+      "family": "economic_stock",
+      "candidate": "economic_stock-r4-b0",
+      "validation_feasible": false,
+      "validation_min_fill": 0.7995354250127259,
+      "validation_min_worst": 0.5567727305623874,
+      "validation_mean_value": 151249.9777777778,
+      "validation_max_service_deficit": 0.04322726943761257
+    },
+    {
+      "profile": "relaxed",
+      "family": "milp",
+      "candidate": "milp-s32-b0.8",
+      "validation_feasible": false,
+      "validation_min_fill": 0.7941161134792054,
+      "validation_min_worst": 0.6161303247803894,
+      "validation_mean_value": 172326.0611111111,
+      "validation_max_service_deficit": 0.0058838865207946345
+    },
+    {
+      "profile": "balanced",
+      "family": "coverage_stock",
+      "candidate": "coverage_stock-r4-b0",
+      "validation_feasible": false,
+      "validation_min_fill": 0.7996380268350357,
+      "validation_min_worst": 0.724782336497782,
+      "validation_mean_value": 147564.68333333335,
+      "validation_max_service_deficit": 0.05036197316496427
+    },
+    {
+      "profile": "balanced",
+      "family": "economic_stock",
+      "candidate": "economic_stock-r4-b0",
+      "validation_feasible": false,
+      "validation_min_fill": 0.7995354250127259,
+      "validation_min_worst": 0.5567727305623874,
+      "validation_mean_value": 151249.9777777778,
+      "validation_max_service_deficit": 0.1932272694376126
+    },
+    {
+      "profile": "balanced",
+      "family": "milp",
+      "candidate": "milp-s32-b0",
+      "validation_feasible": false,
+      "validation_min_fill": 0.7528912618278456,
+      "validation_min_worst": 0.6168134590778344,
+      "validation_mean_value": 154952.5611111111,
+      "validation_max_service_deficit": 0.13318654092216564
+    },
+    {
+      "profile": "strict",
+      "family": "coverage_stock",
+      "candidate": "coverage_stock-r4-b0",
+      "validation_feasible": false,
+      "validation_min_fill": 0.7996380268350357,
+      "validation_min_worst": 0.724782336497782,
+      "validation_mean_value": 147564.68333333335,
+      "validation_max_service_deficit": 0.10036197316496431
+    },
+    {
+      "profile": "strict",
+      "family": "economic_stock",
+      "candidate": "economic_stock-r4-b0",
+      "validation_feasible": false,
+      "validation_min_fill": 0.7995354250127259,
+      "validation_min_worst": 0.5567727305623874,
+      "validation_mean_value": 151249.9777777778,
+      "validation_max_service_deficit": 0.24322726943761264
+    },
+    {
+      "profile": "strict",
+      "family": "milp",
+      "candidate": "milp-s32-b0",
+      "validation_feasible": false,
+      "validation_min_fill": 0.7528912618278456,
+      "validation_min_worst": 0.6168134590778344,
+      "validation_mean_value": 154952.5611111111,
+      "validation_max_service_deficit": 0.18318654092216569
+    },
+    {
+      "profile": "relaxed",
+      "family": "legacy_base_stock",
+      "candidate": "coverage_stock-r2-b0",
+      "validation_feasible": false,
+      "validation_min_fill": 0.7819600937277723,
+      "validation_min_worst": 0.6952109048316667,
+      "validation_mean_value": 141864.85,
+      "validation_max_service_deficit": 0.018039906272227735
+    },
+    {
+      "profile": "balanced",
+      "family": "legacy_base_stock",
+      "candidate": "coverage_stock-r2-b0",
+      "validation_feasible": false,
+      "validation_min_fill": 0.7819600937277723,
+      "validation_min_worst": 0.6952109048316667,
+      "validation_mean_value": 141864.85,
+      "validation_max_service_deficit": 0.06803990627222767
+    },
+    {
+      "profile": "strict",
+      "family": "legacy_base_stock",
+      "candidate": "coverage_stock-r2-b0",
+      "validation_feasible": false,
+      "validation_min_fill": 0.7819600937277723,
+      "validation_min_worst": 0.6952109048316667,
+      "validation_mean_value": 141864.85,
+      "validation_max_service_deficit": 0.11803990627222771
+    }
+  ],
+  "selection_rule": "Eligible in every validation regime: maximize equal-regime mean value. Otherwise minimize maximum service deficit, then maximize value. Candidate id breaks ties.",
+  "validation_ledger_max_error": 5.820766091346741e-11,
+  "frozen_at": "2026-10-27T01:04:59.524018+00:00"
+}

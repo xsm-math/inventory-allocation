@@ -1,0 +1,44 @@
+{
+  "protocol_sha256": "2b1d6dc3fbaa8e9d11c147eaaa64be033de7f9076e213b0d7feb458da13039f9",
+  "source_sha256": {
+    "supplychain/__init__.py": "a44189822d7939c1134a4ba252fb5866b2938a0b09baf306b093e6d857ddf8a6",
+    "supplychain/__main__.py": "7a676762c27e5c767c5bab0693335d6d5420a544ef01dc3d2f1bcd0645cb98cd",
+    "supplychain/benchmark.py": "1cc91baff897e08f5ddfd0de5c2feb1cd3499ca0b245a92df7d041cd9d04155b",
+    "supplychain/forecast.py": "4f4163a4d184c7be793e5e580eee31d80939787097e3ac65eaede5a9d7c13320",
+    "supplychain/frontier.py": "6fce42cfa9b70c29a3736596d0d355d3214fd970533caf3e4ce9d15392a7cff4",
+    "supplychain/network.py": "84317f0e531b3ac91751dbf53a562b68b38e4d7aba0f8e565c454a683beed30b",
+    "supplychain/planner.py": "199fc01a6a4e13e2982e0f15a32eff3f77e65b29d184f7f318f9a226f63a588f",
+    "supplychain/policies.py": "adc9c68b79b1f09023a00107ba1a741463181827b6cb484c580199e32bcbc827",
+    "supplychain/research.py": "49536c523313bdaf68e9371dd86dc1d3cc96494639049de6e94bf1b3eaaeb137",
+    "supplychain/scaling.py": "70592f02d80f181e69817d71d8b96ef403253b335fdadfddac32b5a15d3ae426",
+    "supplychain/simulation.py": "7615cf0c0638673fed809777f83527043ff4884e4507ba691f302a6f752cc60e"
+  },
+  "network_sha256": "e09299772c61cf6641aab0293f5338f8713e98961806e25f71b8206b1969ea93",
+  "python": "3.14.7",
+  "packages": {
+    "numpy": "2.5.3",
+    "pandas": "2.3.3",
+    "scipy": "1.18.1",
+    "matplotlib": "3.11.2"
+  },
+  "synthetic_data": true,
+  "frozen_at": "2026-10-27T01:04:59.524018+00:00",
+  "files": {
+    "capacity_bound_episodes.csv": "97a7e6fd76f6e8666ebd61898ac08c89403a68e6de4005d2b8708b82924826b6",
+    "capacity_bound_manifest.json": "ed9552d09d185aa0c99a25e86c6ec5745dd2b248e2f49f8f6a21800da38e05c5",
+    "capacity_bound_summary.csv": "e4bf7c9064b72d54d601f12751437af9ccb9876b89f41715b9e1964433b1a946",
+    "capacity_bound_target_checks.csv": "ec1c36c38220fc2a7bee9a2610c7a97b571221c2f1e1d3e9d7944021842bb5a6",
+    "CAPACITY_BOUNDS.md": "7ab9c484b4b5920fb3bdcd097e6d7b6e4ec974b1d9afb42e05718a71c9d6218f",
+    "paired_comparisons.csv": "46455661ca9e91ffa704dc62e0eecd35dc81c62b74b8789dba6a15e2605a6fb3",
+    "REPORT.md": "41ae9c3ea79e26850d74ce52f74bbe4ff0e64bc8eaf4cd38be8ef13b897d74e9",
+    "selection.json": "dd1fe2c6ff85b74d5b9961c0e2ea370d0f22a0844fa2f4b197ea02700f48355f",
+    "service_economics.png": "b2d04b4094edb827d9b9bd52c8bfa120e58844368e62dd324a34e07b434c6277",
+    "service_economics.svg": "49443662699bf2cbf91664c3a153fbd60ccfafd32bdbaaebc272415ad74af9ce",
+    "test_episodes.csv": "3e8981672f03a74ad748f16f16a211a9d12e772171461925b71af13ecb26c7db",
+    "test_summary.csv": "edbde25a227115721493dedce3a5e861d57cb1f5d5a6ab6f79aece6e52b59bd1",
+    "test_verification.json": "fd951c1634016f279242d7f544e6b7328676daff18f0a76fc68e989b1d55a5ec",
+    "validation_by_regime.csv": "5422194935bc558ee727d7266854d47baba568592db6b58bb54d2e30a91e9d52",
+    "validation_episodes.csv": "172444e63f94bd0fc6b7af2348f9449b7d8deb50c5764d0701c1b3c79d7f5424",
+    "validation_selection_statistics.csv": "36ce2771db863f0a0e3b736140a5502b81ff66ed225a64a02060eef5ff0d8717"
+  }
+}

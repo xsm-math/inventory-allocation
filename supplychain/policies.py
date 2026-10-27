@@ -6,7 +6,7 @@ from .planner import plan
 
 POLICIES=('base_stock','mpc','mpc_buffered','mpc_safety')
 
-def base_stock(net,state,forecast,day,supply_factor=1.):
+def base_stock(net,state,forecast,day,supply_factor=1.,review_days=2,allocation_rule='coverage'):
     action=Action.zero(net)
     H=len(forecast);mean=forecast.mean(0)
     future=sum(state.outbound.values(),np.zeros_like(state.channel))
@@ -15,12 +15,23 @@ def base_stock(net,state,forecast,day,supply_factor=1.):
     lane=net.lane_capacity[None,None,:]*np.ones((net.W,net.C,2),int)
     # Cover immediate shortfalls with express; replenish future needs by ground.
     for mode in [1,0]:
-        priorities=sorted(((c,p) for c in range(net.C) for p in range(net.P)),key=lambda cp:position[cp]/max(mean[cp],1))
+        pairs=((c,p) for c in range(net.C) for p in range(net.P))
+        if allocation_rule=='economic':
+            # A transparent competing heuristic: immediate contribution per unit
+            # of shared handling capacity. It does not optimize dispatch batching.
+            def priority(cp):
+                c,p=cp
+                contribution=(net.price[c,p]-net.unit_cost[p]+net.shortage_penalty[c,p]
+                              -net.freight[:,c,mode].min()*net.volume[p])
+                return (-contribution/net.volume[p],position[cp]/max(mean[cp],1),c,p)
+        else:
+            def priority(cp):return position[cp]/max(mean[cp],1)
+        priorities=sorted(pairs,key=priority)
         for c,p in priorities:
             for w in np.argsort(net.freight[:,c,mode]):
                 lead=int(net.lead[w,c,mode])
                 if lead>=H:continue
-                target=forecast[:min(H,lead+2)].sum(0)[c,p] if mode==0 else forecast[0,c,p]
+                target=forecast[:min(H,lead+review_days)].sum(0)[c,p] if mode==0 else forecast[0,c,p]
                 # Express must cover only today's on-hand shortfall, excluding future arrivals.
                 already=action.shipments[:,c,1,p].sum()
                 needed=max(0,target-(state.channel[c,p]+already if mode==1 else position[c,p]))
@@ -30,7 +41,7 @@ def base_stock(net,state,forecast,day,supply_factor=1.):
                 position[c,p]+=count
     # Network base stock; orders are apportioned by geographical demand affinity.
     if H>net.supplier_lead:
-        coverage=min(H,net.supplier_lead+int(net.ground_lead.max())+2)
+        coverage=min(H,net.supplier_lead+int(net.ground_lead.max())+review_days)
         target=forecast[:coverage].sum((0,1))
         desired=np.minimum(np.maximum(0,target-state.total_by_product()),np.floor(net.supplier_capacity*supply_factor)).astype(int)
         budget=net.procurement_budget*supply_factor
@@ -51,15 +62,29 @@ def base_stock(net,state,forecast,day,supply_factor=1.):
     return action
 
 
-def decide(net,state,history,day,remaining,policy,horizon=5,supply_factor=1.,time_limit=2.,baseline_horizon=None):
+def decide(net,state,history,day,remaining,policy,horizon=5,supply_factor=1.,time_limit=2.,baseline_horizon=None,
+           forecast_buffer=None,review_days=2,allocation_rule='coverage'):
     if policy not in POLICIES:raise ValueError('Unknown policy')
     if baseline_horizon is not None and (isinstance(baseline_horizon,(bool,np.bool_))
             or not isinstance(baseline_horizon,(int,np.integer)) or baseline_horizon<1):
         raise ValueError('Baseline horizon must be a positive integer')
-    H=min(remaining,max(horizon,net.supplier_lead+int(net.ground_lead.max())+2)) if policy=='base_stock' else min(remaining,horizon)
+    if isinstance(review_days,(bool,np.bool_)) or not isinstance(review_days,(int,np.integer)) or review_days<1:
+        raise ValueError('Review days must be a positive integer')
+    if allocation_rule not in {'coverage','economic'}:
+        raise ValueError('Unknown allocation rule')
+    if policy!='base_stock' and (review_days!=2 or allocation_rule!='coverage'):
+        raise ValueError('Review/allocation controls apply to base stock only')
+    if forecast_buffer is not None and (isinstance(forecast_buffer,(bool,np.bool_)) or
+            not np.isscalar(forecast_buffer) or not np.isfinite(forecast_buffer) or not 0<=forecast_buffer<=2):
+        raise ValueError('Forecast buffer must be finite and between 0 and 2')
+    H=min(remaining,max(horizon,net.supplier_lead+int(net.ground_lead.max())+review_days)) if policy=='base_stock' else min(remaining,horizon)
     if policy=='base_stock' and baseline_horizon is not None:H=min(remaining,baseline_horizon)
-    demand=predict(history,H,buffer=.4 if policy=='mpc_buffered' else 0.)
-    if policy=='base_stock':return base_stock(net,state,demand,day,supply_factor)
+    buffer=(.4 if policy=='mpc_buffered' else 0.) if forecast_buffer is None else forecast_buffer
+    demand=predict(history,H,buffer=buffer)
+    if policy=='base_stock':
+        if review_days==2 and allocation_rule=='coverage':
+            return base_stock(net,state,demand,day,supply_factor)
+        return base_stock(net,state,demand,day,supply_factor,review_days,allocation_rule)
     try:
         if policy=='mpc_safety':
             reserve=safety_stock(history,net.supplier_lead,net.raw.get('safety_quantile',.9))

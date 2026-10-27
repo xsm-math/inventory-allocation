@@ -19,6 +19,8 @@
 
 **Technical audit (2026-10-21):** [Findings, fixes and 26-test verification](docs/TECHNICAL_AUDIT.md) · [Matched-horizon experiment](results/audit/2026-10-21/matched_comparisons.csv). Primary reference results are preserved.
 
+**Service-target extension (2026-10-27):** [Protocol](docs/service_frontier_protocol.md) · [Results and resource bounds](docs/service_frontier_results.md). Validation-frozen comparisons strengthen the stock baseline but do not establish a general MILP advantage at comparable service. The complete 38-test suite passes.
+
 This project studies joint replenishment and allocation in a multi-warehouse, multi-store-channel, multi-SKU inventory network. A rolling mixed-integer linear program coordinates procurement, delayed ground shipments, and same-day express shipments under shared capacities and fixed dispatch charges. Four policies are evaluated using paired Monte Carlo trajectories: a base-stock heuristic, point-forecast MILP, buffered-forecast MILP, and explicit safety-stock MILP. The study separates planning objectives from realized accounting, compares service and economic value, and examines sensitivity to service targets, shortage costs, holding costs, and transport capacity. All data are synthetic; the contribution is a reproducible computational experiment and validated implementation, not a new optimization algorithm or evidence of operational savings.
 
 ## Problem Definition
@@ -96,6 +98,39 @@ Main study: 144 episodes; 0 fallback days; 1 time-limit days; maximum recorded M
 
 Paired, unadjusted Student-t intervals describe seed variation within the synthetic model. They do not establish real-world savings or guarantee service.
 <!-- RESULTS:END -->
+
+### Validation-frozen service comparisons
+
+A separate 42-day study evaluates 27 candidate configurations on six validation
+seeds, freezes choices, and tests five unique selected/control configurations on
+twelve new seeds in each of three regimes: 486 validation and 180 test policy
+episodes. Three service profiles are declared before testing. The families are
+coverage-stock, contribution-priority stock and rolling MILP; each retains its
+natural coverage/horizon and receives nine candidate configurations.
+
+The tuned coverage-stock comparator improves economic value over the legacy
+stock control by 1.73% / 6.89% / 7.02% in normal / surge / supply-shock tests,
+while also improving the two reported service means. These are synthetic outcomes.
+None of the tuned family/profile choices passes every validation service gate;
+all ineligible choices and held-out violations remain visible. Consequently this
+study does not support a qualified claim of MILP economic superiority at comparable
+service, despite higher raw MILP economic values in several cells.
+
+An ex-post optimistic LP bound on surge mean aggregate fill is 86.50% under current
+procurement resources, below the strict profile's 90% target. Budget +10% raises
+that relaxed bound to 91.35%; supplier capacities +10% yield 87.87%. These are
+necessary-resource diagnostics with relaxed logistics, not achievable-service or
+investment-return predictions. [Full results](docs/service_frontier_results.md)
+include paired intervals, episode violations and limitations.
+
+```bash
+python -m supplychain.frontier --stage run --output results/service-frontier-new
+python scripts/capacity_bound.py --run-dir results/service-frontier-new
+python -m supplychain.frontier --stage report --output results/service-frontier-new
+```
+
+The final report command includes the separate bound artifacts in the run manifest.
+Use a fresh output directory; the test stage preserves frozen evidence.
 
 ![Economic value and service](results/network/policy_comparison.svg)
 ![One-factor sensitivity](results/research/sensitivity.svg)
